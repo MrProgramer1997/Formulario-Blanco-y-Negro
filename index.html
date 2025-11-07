@@ -8,7 +8,7 @@
   <style>
     :root{--bg:#0b0b0d;--card:#141418;--muted:#a4a6ad;--text:#f1f1f3;--accent:#ffffff;--ok:#1aa34a;--warn:#f6c445;--err:#ff5a5a}
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Inter UI,Ubuntu,Arial,sans-serif;line-height:1.45}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Ubuntu,Arial,sans-serif;line-height:1.45}
     .wrap{max-width:980px;margin:auto;padding:20px}
     header{position:sticky;top:0;background:linear-gradient(180deg,#0b0b0dd0,#0b0b0d00);backdrop-filter:saturate(150%) blur(2px);z-index:5}
     .title{display:flex;align-items:center;gap:16px}
@@ -40,7 +40,7 @@
     footer{color:var(--muted);text-align:center;padding:30px 10px}
   </style>
   <!-- Supabase SDK v2 -->
-  <script src="https://cmrydhzpcuklfvigboka.supabase.co"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <header class="wrap">
@@ -72,7 +72,7 @@
       <strong>Importante:</strong> En el caso de reservar y no asistir, el club facturará dentro de la cuota de sostenimiento, un valor de <strong>$200.000</strong> por persona.
     </section>
 
-    <!-- FORMULARIO SUPABASE -->
+    <!-- FORMULARIO -->
     <section class="card">
       <h2 style="margin-top:0">Formulario de reserva</h2>
       <form id="form-reserva">
@@ -105,97 +105,51 @@
           </div>
         </div>
 
-        <!-- DATOS INVITADO PRINCIPAL -->
-        <div class="grid" style="margin-top:8px">
-          <h3 style="margin:0">Datos del invitado principal</h3>
+        <!-- DISTRIBUCIÓN DE CUPOS -->
+        <div class="card" style="background:#0f1013;border:1px dashed #2c2f36">
+          <label style="font-weight:700">Distribuye los cupos</label>
           <div class="grid grid-2">
             <div>
-              <label for="doc_tipo">Tipo de documento</label>
-              <select id="doc_tipo" required>
-                <option value="">Selecciona…</option>
-                <option>CC</option>
-                <option>TI</option>
-                <option>CE</option>
-                <option>PAS</option>
-                <option>Otro</option>
-              </select>
+              <label for="cupos_socios">Cupos para <strong>Socios</strong></label>
+              <input id="cupos_socios" type="number" min="0" value="0" />
             </div>
             <div>
-              <label for="doc_numero">Número de documento</label>
-              <input id="doc_numero" required />
+              <label for="cupos_invitados">Cupos para <strong>Invitados</strong></label>
+              <input id="cupos_invitados" type="number" min="0" value="0" />
             </div>
             <div>
-              <label for="p_nombre">Primer Nombre</label>
-              <input id="p_nombre" required />
-            </div>
-            <div>
-              <label for="s_nombre">Segundo Nombre</label>
-              <input id="s_nombre" />
-            </div>
-            <div>
-              <label for="p_apellido">Primer Apellido</label>
-              <input id="p_apellido" required />
-            </div>
-            <div>
-              <label for="s_apellido">Segundo Apellido</label>
-              <input id="s_apellido" />
-            </div>
-            <div>
-              <label for="inv_correo">Correo electrónico</label>
-              <input id="inv_correo" type="email" required />
-            </div>
-            <div>
-              <label for="inv_cel">Número de celular</label>
-              <input id="inv_cel" inputmode="tel" required />
-            </div>
-          </div>
-          <div class="grid grid-2">
-            <div>
-              <label for="fecha_inicio">Fecha de inicio del evento</label>
-              <input id="fecha_inicio" type="datetime-local" required />
-            </div>
-            <div>
-              <label for="fecha_fin">Fecha de fin del evento</label>
-              <input id="fecha_fin" type="datetime-local" required />
+              <small class="hint" id="suma-cupos">Debe sumar exactamente a la cantidad seleccionada.</small>
             </div>
           </div>
         </div>
 
-        <div class="grid" id="grupo-container">
-          <label>Datos del grupo / acompañantes <small class="hint">(Nombre y apellido; si es corporado, número de cupo/acción)</small></label>
-          <div id="integrantes" class="grid"></div>
+        <!-- FORMULARIOS SEGÚN TIPO -->
+        <div class="grid" id="bloques-datos" style="margin-top:8px">
+          <div class="grid" id="datos-socios"></div>
+          <div class="grid" id="datos-invitados"></div>
         </div>
 
         <hr style="border:0;border-top:1px solid #2c2f36;margin:18px 0"/>
 
+        <!-- COSTO Y PAGO -->
         <div class="grid grid-2">
           <div>
-            <label for="invitados">Número de invitados (no corporados)</label>
-            <select id="invitados" name="invitados">
-              <option value="0" selected>0</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-              <option value="7">7</option>
-              <option value="8">8</option>
-              <option value="9">9</option>
-              <option value="10">10</option>
-            </select>
-            <small class="hint">Valor por invitado: $250.000</small>
+            <label>Total a pagar por Invitados</label>
+            <div class="card" style="padding:12px;background:#0f1013;border:1px solid #2c2f36">
+              <div id="resumen-pago" class="row">0 invitados × $250.000 = <strong>$0</strong></div>
+              <small class="hint">Socios: $0 según protocolo.</small>
+            </div>
           </div>
           <div>
-            <label for="soporte">Soporte de pago (PDF/JPG/PNG)</label>
-            <input id="soporte" name="soporte" type="file" accept=".pdf,.jpg,.jpeg,.png" />
+            <label for="soporte">Soporte de pago (PDF/JPG/PNG) <span class="danger">*</span></label>
+            <input id="soporte" name="soporte" type="file" accept=".pdf,.jpg,.jpeg,.png" required />
             <small class="hint">Transferir a Davivienda CC 126669999149 o Bancolombia CC 07322164601 y adjuntar el soporte.</small>
+            <div class="bank" style="margin-top:8px">
+              <div class="item"><span>Davivienda • CC <strong>126669999149</strong></span><button class="btn" type="button" data-copy="126669999149">Copiar</button></div>
+              <div class="item"><span>Bancolombia • CC <strong>07322164601</strong></span><button class="btn" type="button" data-copy="07322164601">Copiar</button></div>
+              <div class="row"><a class="btn ghost" href="https://www.davivienda.com/" target="_blank" rel="noopener">Ir a Davivienda</a><a class="btn ghost" href="https://www.bancolombia.com/" target="_blank" rel="noopener">Ir a Bancolombia</a></div>
+            </div>
           </div>
-        </div>
-
-        <div class="bank" style="margin-top:8px">
-          <div class="item"><span>Davivienda • Cuenta Corriente <strong>126669999149</strong></span><button class="btn" type="button" data-copy="126669999149">Copiar</button></div>
-          <div class="item"><span>Bancolombia • Cuenta Corriente <strong>07322164601</strong></span><button class="btn" type="button" data-copy="07322164601">Copiar</button></div>
         </div>
 
         <p class="terms" style="margin-top:16px">
@@ -209,7 +163,6 @@
         </div>
 
         <p id="estado" class="hint" style="margin-top:10px"></p>
-
       </form>
     </section>
 
@@ -228,19 +181,6 @@
         <li>La ubicación de mesas puede cambiar según necesidades de montaje.</li>
       </ul>
     </section>
-
-    <!-- DOC: PASOS DE CONFIGURACIÓN -->
-    <section class="card">
-      <h3 style="margin-top:0">Guía rápida de configuración (Supabase)</h3>
-      <ol class="hint">
-        <li>Crea proyecto en Supabase. Copia <strong>SUPABASE_URL</strong> y <strong>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcnlkaHpwY3VrbGZ2aWdib2thIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzU1NDIsImV4cCI6MjA3ODExMTU0Mn0.SzLh-CoahU63AISJwPKJLJkAf-JQ2qxAwUt69NsPKgQ</strong>.</li>
-        <li>En <em>SQL Editor</em>, ejecuta el script de la sección «SQL Backend» (ver abajo).</li>
-        <li>En <em>Storage</em>, crea bucket público llamado <code>pagos</code> (policy de lectura pública).</li>
-        <li>En GitHub Pages, publica este <code>index.html</code> y coloca la imagen en <code>assets/plano-blanco-negro.jpg</code>.</li>
-        <li>En este archivo, reemplaza los placeholders de <code>SUPABASE_URL</code> y <code>SUPABASE_ANON_KEY</code> en el script.</li>
-      </ol>
-    </section>
-
   </main>
 
   <footer>© Club Campestre Pereira – Fiesta Blanco & Negro</footer>
@@ -255,38 +195,78 @@
     const $ = (id)=>document.getElementById(id);
     const estado = $("estado");
     const cantidadSel = $("cantidad");
-    const integrantesDiv = $("integrantes");
     const form = $("form-reserva");
 
-    function renderIntegrantes(n){
-      integrantesDiv.innerHTML='';
-      const total = Number(n||0);
-      for(let i=1;i<=total;i++){
-        const wrap = document.createElement('div');
-        wrap.className='grid grid-2';
-        wrap.innerHTML = `
-          <div>
-            <label for="persona_${i}">Persona ${i}</label>
-            <input id="persona_${i}" name="persona_${i}" placeholder="Nombre y apellido" required />
-          </div>
-          <div>
-            <label for="accion_${i}">Cupo/Acción (si aplica)</label>
-            <input id="accion_${i}" name="accion_${i}" placeholder="# de acción o 'Invitado'" />
-          </div>`;
-        integrantesDiv.appendChild(wrap);
-      }
-    }
-
-    cantidadSel.addEventListener('change', (e)=>{
-      const val = Number(e.target.value||0);
-      renderIntegrantes(val);
-      updateWhatsAppLink();
-    });
-
-    document.querySelectorAll('[data-copy]').forEach(btn=>{
+    const copiarBtns = ()=>document.querySelectorAll('[data-copy]').forEach(btn=>{
       btn.addEventListener('click', async ()=>{
         try{await navigator.clipboard.writeText(btn.dataset.copy);btn.textContent='Copiado';setTimeout(()=>btn.textContent='Copiar',1500);}catch(err){alert('No se pudo copiar');}
       });
+    });
+
+    // ====== RENDERIZADO DINÁMICO ======
+    const inptSoc = $("cupos_socios"), inptInv = $("cupos_invitados");
+    const boxSoc = $("datos-socios"), boxInv = $("datos-invitados");
+    const lblSuma = $("suma-cupos");
+
+    function validarSuma(){
+      const total = Number(cantidadSel.value||0);
+      const s = Number(inptSoc.value||0), i = Number(inptInv.value||0);
+      const suma = s+i;
+      lblSuma.textContent = `Seleccionados ${suma} de ${total} cupos`;
+      lblSuma.style.color = (suma===total? '#a4a6ad' : '#ff5a5a');
+      return suma===total && total>=8 && total<=10;
+    }
+
+    function renderBloques(){
+      // Socios
+      boxSoc.innerHTML = '';
+      const ns = Number(inptSoc.value||0);
+      if(ns>0){
+        const title = document.createElement('h3'); title.textContent = `Datos de Socios (${ns})`; title.style.margin='0'; boxSoc.appendChild(title);
+        for(let x=1;x<=ns;x++){
+          const wrap=document.createElement('div'); wrap.className='grid grid-2';
+          wrap.innerHTML = `
+            <div><label for="socio_nombre_${x}">Socio ${x} – Nombre</label><input id="socio_nombre_${x}" required /></div>
+            <div><label for="socio_apellido_${x}">Socio ${x} – Apellido</label><input id="socio_apellido_${x}" required /></div>
+            <div><label for="socio_cel_${x}">Socio ${x} – Celular/WhatsApp</label><input id="socio_cel_${x}" inputmode="tel" required /></div>
+            <div><label for="socio_accion_${x}">Socio ${x} – N° de acción/cupo</label><input id="socio_accion_${x}" required /></div>`;
+          boxSoc.appendChild(wrap);
+        }
+      }
+      // Invitados
+      boxInv.innerHTML = '';
+      const ni = Number(inptInv.value||0);
+      if(ni>0){
+        const title = document.createElement('h3'); title.textContent = `Datos de Invitados (${ni})`; title.style.margin='0'; boxInv.appendChild(title);
+        for(let x=1;x<=ni;x++){
+          const wrap=document.createElement('div'); wrap.className='grid grid-2';
+          wrap.innerHTML = `
+            <div><label for="inv_tipo_${x}">Invitado ${x} – Tipo de documento</label>
+              <select id="inv_tipo_${x}" required><option value="">Selecciona…</option><option>CC</option><option>TI</option><option>CE</option><option>PAS</option><option>Otro</option></select>
+            </div>
+            <div><label for="inv_doc_${x}">Invitado ${x} – Número de documento</label><input id="inv_doc_${x}" required /></div>
+            <div><label for="inv_pnom_${x}">Invitado ${x} – Primer Nombre</label><input id="inv_pnom_${x}" required /></div>
+            <div><label for="inv_snom_${x}">Invitado ${x} – Segundo Nombre</label><input id="inv_snom_${x}" /></div>
+            <div><label for="inv_pape_${x}">Invitado ${x} – Primer Apellido</label><input id="inv_pape_${x}" required /></div>
+            <div><label for="inv_sape_${x}">Invitado ${x} – Segundo Apellido</label><input id="inv_sape_${x}" /></div>
+            <div><label for="inv_cor_${x}">Invitado ${x} – Correo electrónico</label><input id="inv_cor_${x}" type="email" required /></div>
+            <div><label for="inv_cel_${x}">Invitado ${x} – Número de celular</label><input id="inv_cel_${x}" inputmode="tel" required /></div>`;
+          boxInv.appendChild(wrap);
+        }
+      }
+      actualizarPago();
+    }
+
+    function actualizarPago(){
+      const invitados = Number(inptInv.value||0);
+      const total = invitados * 250000;
+      const fmt = (n)=> n.toLocaleString('es-CO', { style:'currency', currency:'COP', maximumFractionDigits:0 });
+      document.getElementById('resumen-pago').innerHTML = `${invitados} invitados × $250.000 = <strong>${fmt(total)}</strong>`;
+      return total;
+    }
+
+    ['change','input'].forEach(evt=>{
+      [cantidadSel,inptSoc,inptInv].forEach(el=> el.addEventListener(evt,()=>{validarSuma();renderBloques();updateWhatsAppLink();}));
     });
 
     function updateWhatsAppLink(){
@@ -296,13 +276,14 @@
       const msg = `Hola, quiero reservar mesa ${mesa} para ${cant} personas. Responsable: ${nombre}.`;
       $("btn-whatsapp").href = 'https://wa.me/573127596112?text=' + encodeURIComponent(msg);
     }
-    ['nombres','mesa'].forEach(id=>$(id).addEventListener('input',updateWhatsAppLink));
+
+    copiarBtns();
 
     // ====== SUBIR ARCHIVO A STORAGE ======
     async function subirSoporte(file){
-      if(!file) return null;
+      if(!file) throw new Error('Debes adjuntar el soporte de pago.');
       const nombre = `pagos/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9_.-]/g,'_')}`;
-      const { data, error } = await _sb.storage.from('pagos').upload(nombre, file, { cacheControl: '3600', upsert: false });
+      const { error } = await _sb.storage.from('pagos').upload(nombre, file, { cacheControl: '3600', upsert: false });
       if(error){ throw new Error('No se pudo subir el soporte'); }
       const { data: pub } = _sb.storage.from('pagos').getPublicUrl(nombre);
       return pub.publicUrl;
@@ -317,122 +298,65 @@
         estado.className='danger';
         return;
       }
-      $('btn-enviar').disabled = true; estado.textContent='Procesando…'; estado.className='hint';
+      if(!validarSuma()){
+        estado.textContent='La distribución de cupos debe sumar exactamente la cantidad seleccionada.'; 
+        estado.className='danger'; 
+        return;
+      }
+      const soporteFile = document.getElementById('soporte').files[0];
+      if(!soporteFile){ 
+        estado.textContent='Debes adjuntar el soporte de pago para continuar.'; 
+        estado.className='danger'; 
+        return; 
+      }
+
+      $("btn-enviar").disabled = true; estado.textContent='Procesando…'; estado.className='hint';
       try{
-        const soporteFile = $('soporte').files[0] || null;
         const pago_url = await subirSoporte(soporteFile);
 
-        // Construir JSON de invitado principal y evento
-        const invitado = {
-          doc_tipo: $('doc_tipo').value,
-          doc_numero: $('doc_numero').value,
-          primer_nombre: $('p_nombre').value,
-          segundo_nombre: $('s_nombre').value || null,
-          primer_apellido: $('p_apellido').value,
-          segundo_apellido: $('s_apellido').value || null,
-          correo: $('inv_correo').value,
-          celular: $('inv_cel').value
-        };
-        const evento = {
-          fecha_inicio: $('fecha_inicio').value,
-          fecha_fin: $('fecha_fin').value
-        };
+        const socios=[], invitados=[];
+        for(let x=1;x<=Number(inptSoc.value||0);x++){
+          socios.push({ nombre: $("socio_nombre_"+x).value, apellido: $("socio_apellido_"+x).value, celular: $("socio_cel_"+x).value, accion: $("socio_accion_"+x).value });
+        }
+        for(let x=1;x<=Number(inptInv.value||0);x++){
+          invitados.push({ tipo: $("inv_tipo_"+x).value, documento: $("inv_doc_"+x).value, pnombre: $("inv_pnom_"+x).value, snombre: $("inv_snom_"+x).value||null, papellido: $("inv_pape_"+x).value, sapellido: $("inv_sape_"+x).value||null, correo: $("inv_cor_"+x).value, celular: $("inv_cel_"+x).value });
+        }
 
-        // Llamada RPC
+        const grupo = { socios, invitados, total: cantidad };
+
         const { data, error } = await _sb.rpc('reserve_seats_v2', {
-          p_mesa_id: Number($('mesa').value),
+          p_mesa_id: Number($("mesa").value),
           p_cantidad: cantidad,
-          p_responsable: $('nombres').value,
-          p_contacto: $('contacto').value,
-          p_correo: $('correo').value,
+          p_responsable: $("nombres").value,
+          p_contacto: $("contacto").value,
+          p_correo: $("correo").value,
           p_pago_url: pago_url,
-          p_invitado: invitado,
-          p_evento: evento
+          p_invitado: grupo,
+          p_evento: null
         });
 
         if(error){
           if((error.message||'').includes('SIN_CUPO')){
-            estado.textContent='La mesa no tiene cupo suficiente.'; estado.className='danger'; $('btn-enviar').disabled=false; return;
+            estado.textContent='La mesa no tiene cupo suficiente.'; 
+            estado.className='danger'; 
+            $("btn-enviar").disabled=false; 
+            return;
           }
           throw error;
         }
 
-        estado.textContent = '¡Reserva registrada! ID: ' + data;
+        const totalPago = actualizarPago();
+        const fmt = (n)=> n.toLocaleString('es-CO', { style:'currency', currency:'COP', maximumFractionDigits:0 });
+        estado.innerHTML = `¡Reserva registrada! ID: <strong>${data}</strong>. Total a pagar por invitados: <strong>${fmt(totalPago)}</strong>.`;
         estado.className = 'ok';
         updateWhatsAppLink();
       }catch(err){
         console.error(err);
         estado.textContent='Ocurrió un error al reservar. Intenta de nuevo.';
         estado.className='danger';
-        $('btn-enviar').disabled=false;
+        $("btn-enviar").disabled=false;
       }
     });
-
-    // Prefill fechas del evento (opcional)
-    (function(){
-      const start = new Date();
-      start.setHours(19,0,0,0); // 7pm
-      const end = new Date(start.getTime() + 10*60*60*1000); // +10h → 5am
-      const fmt = (d)=>d.toISOString().slice(0,16);
-      if(!$('fecha_inicio').value) $('fecha_inicio').value = fmt(start);
-      if(!$('fecha_fin').value) $('fecha_fin').value = fmt(end);
-    })();
   </script>
-
-  <!-- ===================== SQL Backend (copiar al SQL Editor de Supabase) =====================
-  -- Crea tablas y función v2 con JSON para invitado y evento
-  -- Ejecuta todo este bloque una sola vez
-
-  -- Mesas
-  -- create table if not exists mesas (
-  --   id int primary key,
-  --   nombre text,
-  --   aforo int not null default 10,
-  --   reservados int not null default 0
-  -- );
-
-  -- Reservas
-  -- create table if not exists reservas (
-  --   id uuid primary key default gen_random_uuid(),
-  --   mesa_id int not null references mesas(id) on delete restrict,
-  --   responsable text not null,
-  --   contacto text not null,
-  --   correo text not null,
-  --   cantidad int not null check (cantidad between 1 and 10),
-  --   pago_url text,
-  --   invitado jsonb,
-  --   evento jsonb,
-  --   estado text not null default 'pendiente',
-  --   created_at timestamptz not null default now()
-  -- );
-
-  -- alter table mesas enable row level security; alter table reservas enable row level security;
-  -- create policy "mesas_read" on mesas for select using (true);
-  -- create policy "reservas_read" on reservas for select using (true);
-
-  -- create or replace function reserve_seats_v2(
-  --   p_mesa_id int,
-  --   p_cantidad int,
-  --   p_responsable text,
-  --   p_contacto text,
-  --   p_correo text,
-  --   p_pago_url text,
-  --   p_invitado jsonb,
-  --   p_evento jsonb
-  -- ) returns uuid language plpgsql security definer as $$
-  -- declare v_id uuid; v_mesa int;
-  -- begin
-  --   update mesas set reservados = reservados + p_cantidad
-  --   where id = p_mesa_id and reservados + p_cantidad <= aforo
-  --   returning id into v_mesa;
-  --   if not found then raise exception 'SIN_CUPO'; end if;
-  --   insert into reservas (mesa_id,responsable,contacto,correo,cantidad,pago_url,invitado,evento,estado)
-  --   values (v_mesa,p_responsable,p_contacto,p_correo,p_cantidad,p_pago_url,p_invitado,p_evento,'pendiente')
-  --   returning id into v_id;
-  --   return v_id; end; $$;
-  -- grant execute on function reserve_seats_v2(int,int,text,text,text,text,jsonb,jsonb) to anon;
-
-  -- Storage: crear bucket público llamado 'pagos'
-  ===================== -->
 </body>
 </html>
