@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reserva – Fiesta Blanco & Negro</title>
+  <meta name="description" content="Formulario de reservas – GitHub Pages + Supabase" />
+  <style>
+    :root{--bg:#0b0b0d;--card:#141418;--muted:#a4a6ad;--text:#f1f1f3;--accent:#ffffff;--ok:#1aa34a;--warn:#f6c445;--err:#ff5a5a}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Inter UI,Ubuntu,Arial,sans-serif;line-height:1.45}
+    .wrap{max-width:980px;margin:auto;padding:20px}
+    header{position:sticky;top:0;background:linear-gradient(180deg,#0b0b0dd0,#0b0b0d00);backdrop-filter:saturate(150%) blur(2px);z-index:5}
+    .title{display:flex;align-items:center;gap:16px}
+    .title h1{font-size:clamp(22px,3.2vw,34px);margin:0}
+    .card{background:var(--card);border:1px solid #22242a;border-radius:16px;padding:20px;box-shadow:0 10px 30px #00000040}
+    .grid{display:grid;gap:16px}
+    @media (min-width:860px){.grid-2{grid-template-columns:1fr 1fr}}
+    label{display:block;font-weight:600;margin-bottom:6px}
+    input,select,textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #2c2f36;background:#0f1013;color:var(--text);outline:none}
+    input:focus,select:focus,textarea:focus{border-color:#5c6cff;box-shadow:0 0 0 3px #5c6cff30}
+    small{color:var(--muted)}
+    .hint{font-size:12px;color:var(--muted)}
+    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid #2c2f36;background:#101217;color:var(--text);padding:12px 16px;border-radius:12px;cursor:pointer;text-decoration:none;font-weight:600}
+    .btn:hover{background:#151826}
+    .btn.primary{background:#5c6cff;border-color:#5c6cff;color:#fff}
+    .btn.ghost{background:#0f1013}
+    .danger{color:var(--err)}
+    .ok{color:var(--ok)}
+    .kpi{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+    .kpi div{background:#0f1013;border:1px dashed #2c2f36;border-radius:12px;padding:12px;text-align:center}
+    figure{margin:0;border-radius:16px;overflow:hidden;border:1px solid #22242a}
+    figcaption{padding:8px 10px;color:var(--muted);font-size:12px;background:#0f1013}
+    .bank{display:grid;gap:10px}
+    .bank .item{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:12px;border-radius:12px;background:#0f1013;border:1px solid #2c2f36}
+    .alert{border-left:4px solid var(--warn);background:#17130a;border-radius:12px;padding:12px 14px}
+    .terms{display:flex;gap:8px;align-items:flex-start}
+    .pill{display:inline-block;padding:6px 10px;border:1px solid #2c2f36;border-radius:999px;background:#0f1013;color:var(--muted);font-size:12px}
+    footer{color:var(--muted);text-align:center;padding:30px 10px}
+  </style>
+  <!-- Supabase SDK v2 -->
+  <script src="https://cmrydhzpcuklfvigboka.supabase.co"></script>
+</head>
+<body>
+  <header class="wrap">
+    <div class="title">
+      <img src="./assets/plano-blanco-negro.jpg" alt="Plano de ubicación de mesas" style="width:64px;height:64px;object-fit:cover;border-radius:12px;border:1px solid #2c2f36"/>
+      <div>
+        <h1>Reserva de mesas · Fiesta Blanco & Negro</h1>
+        <div class="row"><span class="pill">Sábado 22 de noviembre</span><span class="pill">Salón Rialto & Lobby</span><span class="pill">Horario: 7:00 p.m. – 5:00 a.m.</span></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap grid" style="margin-top:14px">
+    <!-- MAPA -->
+    <section class="card grid">
+      <figure>
+        <img src="./assets/plano-blanco-negro.jpg" alt="Plano de mesas (referencia)" style="width:100%;display:block"/>
+        <figcaption>Revise la disponibilidad y ubicación de las mesas antes de reservar. La ubicación está sujeta a cambios por montaje.</figcaption>
+      </figure>
+      <div class="kpi">
+        <div><strong>Capacidad por mesa</strong><br><span>10 personas</span></div>
+        <div><strong>Mínimo para reservar</strong><br><span class="ok">8 personas</span></div>
+        <div><strong>Edad mínima</strong><br><span>18 años</span></div>
+      </div>
+    </section>
+
+    <!-- ALERTA PENALIDAD -->
+    <section class="card alert">
+      <strong>Importante:</strong> En el caso de reservar y no asistir, el club facturará dentro de la cuota de sostenimiento, un valor de <strong>$200.000</strong> por persona.
+    </section>
+
+    <!-- FORMULARIO SUPABASE -->
+    <section class="card">
+      <h2 style="margin-top:0">Formulario de reserva</h2>
+      <form id="form-reserva">
+        <div class="grid grid-2">
+          <div>
+            <label for="nombres">Nombre del responsable</label>
+            <input id="nombres" name="nombres" required placeholder="Nombre y apellido" />
+          </div>
+          <div>
+            <label for="contacto">Teléfono / WhatsApp</label>
+            <input id="contacto" name="contacto" inputmode="tel" placeholder="312 759 6112" required />
+          </div>
+          <div>
+            <label for="correo">Correo electrónico</label>
+            <input id="correo" type="email" name="correo" placeholder="correo@ejemplo.com" required />
+          </div>
+          <div>
+            <label for="mesa">Número de mesa</label>
+            <input id="mesa" name="mesa" required placeholder="Ej. 12 (ver mapa)" />
+          </div>
+          <div>
+            <label for="cantidad">Cantidad de puestos a reservar</label>
+            <select id="cantidad" name="cantidad" required>
+              <option value="" selected disabled>Selecciona (mínimo 8)</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+            <small class="hint">Cada mesa tiene máximo 10 puestos.</small>
+          </div>
+        </div>
+
+        <!-- DATOS INVITADO PRINCIPAL -->
+        <div class="grid" style="margin-top:8px">
+          <h3 style="margin:0">Datos del invitado principal</h3>
+          <div class="grid grid-2">
+            <div>
+              <label for="doc_tipo">Tipo de documento</label>
+              <select id="doc_tipo" required>
+                <option value="">Selecciona…</option>
+                <option>CC</option>
+                <option>TI</option>
+                <option>CE</option>
+                <option>PAS</option>
+                <option>Otro</option>
+              </select>
+            </div>
+            <div>
+              <label for="doc_numero">Número de documento</label>
+              <input id="doc_numero" required />
+            </div>
+            <div>
+              <label for="p_nombre">Primer Nombre</label>
+              <input id="p_nombre" required />
+            </div>
+            <div>
+              <label for="s_nombre">Segundo Nombre</label>
+              <input id="s_nombre" />
+            </div>
+            <div>
+              <label for="p_apellido">Primer Apellido</label>
+              <input id="p_apellido" required />
+            </div>
+            <div>
+              <label for="s_apellido">Segundo Apellido</label>
+              <input id="s_apellido" />
+            </div>
+            <div>
+              <label for="inv_correo">Correo electrónico</label>
+              <input id="inv_correo" type="email" required />
+            </div>
+            <div>
+              <label for="inv_cel">Número de celular</label>
+              <input id="inv_cel" inputmode="tel" required />
+            </div>
+          </div>
+          <div class="grid grid-2">
+            <div>
+              <label for="fecha_inicio">Fecha de inicio del evento</label>
+              <input id="fecha_inicio" type="datetime-local" required />
+            </div>
+            <div>
+              <label for="fecha_fin">Fecha de fin del evento</label>
+              <input id="fecha_fin" type="datetime-local" required />
+            </div>
+          </div>
+        </div>
+
+        <div class="grid" id="grupo-container">
+          <label>Datos del grupo / acompañantes <small class="hint">(Nombre y apellido; si es corporado, número de cupo/acción)</small></label>
+          <div id="integrantes" class="grid"></div>
+        </div>
+
+        <hr style="border:0;border-top:1px solid #2c2f36;margin:18px 0"/>
+
+        <div class="grid grid-2">
+          <div>
+            <label for="invitados">Número de invitados (no corporados)</label>
+            <select id="invitados" name="invitados">
+              <option value="0" selected>0</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+            <small class="hint">Valor por invitado: $250.000</small>
+          </div>
+          <div>
+            <label for="soporte">Soporte de pago (PDF/JPG/PNG)</label>
+            <input id="soporte" name="soporte" type="file" accept=".pdf,.jpg,.jpeg,.png" />
+            <small class="hint">Transferir a Davivienda CC 126669999149 o Bancolombia CC 07322164601 y adjuntar el soporte.</small>
+          </div>
+        </div>
+
+        <div class="bank" style="margin-top:8px">
+          <div class="item"><span>Davivienda • Cuenta Corriente <strong>126669999149</strong></span><button class="btn" type="button" data-copy="126669999149">Copiar</button></div>
+          <div class="item"><span>Bancolombia • Cuenta Corriente <strong>07322164601</strong></span><button class="btn" type="button" data-copy="07322164601">Copiar</button></div>
+        </div>
+
+        <p class="terms" style="margin-top:16px">
+          <input id="acepto" type="checkbox" required />
+          <label for="acepto">Confirmo que reservo mínimo 8 puestos y acepto que, en caso de no asistir, se cobrará $200.000 por persona en mi cuota de sostenimiento.</label>
+        </p>
+
+        <div class="row" style="margin-top:12px">
+          <button class="btn primary" type="submit" id="btn-enviar">Reservar mesa</button>
+          <a class="btn ghost" target="_blank" rel="noopener" id="btn-whatsapp" href="https://wa.me/573127596112">Hablar por WhatsApp</a>
+        </div>
+
+        <p id="estado" class="hint" style="margin-top:10px"></p>
+
+      </form>
+    </section>
+
+    <!-- PROTOCOLO -->
+    <section class="card grid">
+      <h3 style="margin:0">Protocolo y condiciones</h3>
+      <ul>
+        <li>Código de vestimenta: elegante blanco/negro (mujeres: vestido largo o conjunto; hombres: pantalón, camisa y chaqueta sin corbata).</li>
+        <li>Edad mínima: 18 años.</li>
+        <li>Horario: 7:00 p.m. a 5:00 a.m.</li>
+        <li>Valor por persona: corporado $0; invitado $250.000.</li>
+        <li>Acomodación: mesas rectangulares de 8 (máx. 10) en Salón Rialto y Lobby. Para grupos de 2–7, escribir a WhatsApp 3127596112.</li>
+        <li>Reservas/cancelaciones hasta jueves 20 de noviembre o hasta agotar disponibilidad.</li>
+        <li>Pasos: (1) revise y elija mesa; (2) complete este formulario; (3) pague invitados y registre en oficina de eventos con el soporte.</li>
+        <li>En caso de no cumplir con el mínimo de puestos, el club podrá reubicar su grupo.</li>
+        <li>La ubicación de mesas puede cambiar según necesidades de montaje.</li>
+      </ul>
+    </section>
+
+    <!-- DOC: PASOS DE CONFIGURACIÓN -->
+    <section class="card">
+      <h3 style="margin-top:0">Guía rápida de configuración (Supabase)</h3>
+      <ol class="hint">
+        <li>Crea proyecto en Supabase. Copia <strong>SUPABASE_URL</strong> y <strong>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcnlkaHpwY3VrbGZ2aWdib2thIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzU1NDIsImV4cCI6MjA3ODExMTU0Mn0.SzLh-CoahU63AISJwPKJLJkAf-JQ2qxAwUt69NsPKgQ</strong>.</li>
+        <li>En <em>SQL Editor</em>, ejecuta el script de la sección «SQL Backend» (ver abajo).</li>
+        <li>En <em>Storage</em>, crea bucket público llamado <code>pagos</code> (policy de lectura pública).</li>
+        <li>En GitHub Pages, publica este <code>index.html</code> y coloca la imagen en <code>assets/plano-blanco-negro.jpg</code>.</li>
+        <li>En este archivo, reemplaza los placeholders de <code>SUPABASE_URL</code> y <code>SUPABASE_ANON_KEY</code> en el script.</li>
+      </ol>
+    </section>
+
+  </main>
+
+  <footer>© Club Campestre Pereira – Fiesta Blanco & Negro</footer>
+
+  <script>
+    // ====== CONFIGURACIÓN SUPABASE ======
+    const SUPABASE_URL = "https://TU-PROYECTO.supabase.co"; // <-- reemplazar
+    const SUPABASE_ANON_KEY = "TU-ANON-KEY"; // <-- reemplazar
+    const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ====== UTILIDADES DE UI ======
+    const $ = (id)=>document.getElementById(id);
+    const estado = $("estado");
+    const cantidadSel = $("cantidad");
+    const integrantesDiv = $("integrantes");
+    const form = $("form-reserva");
+
+    function renderIntegrantes(n){
+      integrantesDiv.innerHTML='';
+      const total = Number(n||0);
+      for(let i=1;i<=total;i++){
+        const wrap = document.createElement('div');
+        wrap.className='grid grid-2';
+        wrap.innerHTML = `
+          <div>
+            <label for="persona_${i}">Persona ${i}</label>
+            <input id="persona_${i}" name="persona_${i}" placeholder="Nombre y apellido" required />
+          </div>
+          <div>
+            <label for="accion_${i}">Cupo/Acción (si aplica)</label>
+            <input id="accion_${i}" name="accion_${i}" placeholder="# de acción o 'Invitado'" />
+          </div>`;
+        integrantesDiv.appendChild(wrap);
+      }
+    }
+
+    cantidadSel.addEventListener('change', (e)=>{
+      const val = Number(e.target.value||0);
+      renderIntegrantes(val);
+      updateWhatsAppLink();
+    });
+
+    document.querySelectorAll('[data-copy]').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        try{await navigator.clipboard.writeText(btn.dataset.copy);btn.textContent='Copiado';setTimeout(()=>btn.textContent='Copiar',1500);}catch(err){alert('No se pudo copiar');}
+      });
+    });
+
+    function updateWhatsAppLink(){
+      const nombre = encodeURIComponent($("nombres").value || '');
+      const mesa = encodeURIComponent($("mesa").value || '');
+      const cant = encodeURIComponent(cantidadSel.value || '');
+      const msg = `Hola, quiero reservar mesa ${mesa} para ${cant} personas. Responsable: ${nombre}.`;
+      $("btn-whatsapp").href = 'https://wa.me/573127596112?text=' + encodeURIComponent(msg);
+    }
+    ['nombres','mesa'].forEach(id=>$(id).addEventListener('input',updateWhatsAppLink));
+
+    // ====== SUBIR ARCHIVO A STORAGE ======
+    async function subirSoporte(file){
+      if(!file) return null;
+      const nombre = `pagos/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9_.-]/g,'_')}`;
+      const { data, error } = await _sb.storage.from('pagos').upload(nombre, file, { cacheControl: '3600', upsert: false });
+      if(error){ throw new Error('No se pudo subir el soporte'); }
+      const { data: pub } = _sb.storage.from('pagos').getPublicUrl(nombre);
+      return pub.publicUrl;
+    }
+
+    // ====== ENVIAR RESERVA (RPC) ======
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const cantidad = Number(cantidadSel.value||0);
+      if(!(cantidad>=8 && cantidad<=10)){
+        estado.textContent = 'Debes reservar mínimo 8 y máximo 10 puestos por mesa.';
+        estado.className='danger';
+        return;
+      }
+      $('btn-enviar').disabled = true; estado.textContent='Procesando…'; estado.className='hint';
+      try{
+        const soporteFile = $('soporte').files[0] || null;
+        const pago_url = await subirSoporte(soporteFile);
+
+        // Construir JSON de invitado principal y evento
+        const invitado = {
+          doc_tipo: $('doc_tipo').value,
+          doc_numero: $('doc_numero').value,
+          primer_nombre: $('p_nombre').value,
+          segundo_nombre: $('s_nombre').value || null,
+          primer_apellido: $('p_apellido').value,
+          segundo_apellido: $('s_apellido').value || null,
+          correo: $('inv_correo').value,
+          celular: $('inv_cel').value
+        };
+        const evento = {
+          fecha_inicio: $('fecha_inicio').value,
+          fecha_fin: $('fecha_fin').value
+        };
+
+        // Llamada RPC
+        const { data, error } = await _sb.rpc('reserve_seats_v2', {
+          p_mesa_id: Number($('mesa').value),
+          p_cantidad: cantidad,
+          p_responsable: $('nombres').value,
+          p_contacto: $('contacto').value,
+          p_correo: $('correo').value,
+          p_pago_url: pago_url,
+          p_invitado: invitado,
+          p_evento: evento
+        });
+
+        if(error){
+          if((error.message||'').includes('SIN_CUPO')){
+            estado.textContent='La mesa no tiene cupo suficiente.'; estado.className='danger'; $('btn-enviar').disabled=false; return;
+          }
+          throw error;
+        }
+
+        estado.textContent = '¡Reserva registrada! ID: ' + data;
+        estado.className = 'ok';
+        updateWhatsAppLink();
+      }catch(err){
+        console.error(err);
+        estado.textContent='Ocurrió un error al reservar. Intenta de nuevo.';
+        estado.className='danger';
+        $('btn-enviar').disabled=false;
+      }
+    });
+
+    // Prefill fechas del evento (opcional)
+    (function(){
+      const start = new Date();
+      start.setHours(19,0,0,0); // 7pm
+      const end = new Date(start.getTime() + 10*60*60*1000); // +10h → 5am
+      const fmt = (d)=>d.toISOString().slice(0,16);
+      if(!$('fecha_inicio').value) $('fecha_inicio').value = fmt(start);
+      if(!$('fecha_fin').value) $('fecha_fin').value = fmt(end);
+    })();
+  </script>
+
+  <!-- ===================== SQL Backend (copiar al SQL Editor de Supabase) =====================
+  -- Crea tablas y función v2 con JSON para invitado y evento
+  -- Ejecuta todo este bloque una sola vez
+
+  -- Mesas
+  -- create table if not exists mesas (
+  --   id int primary key,
+  --   nombre text,
+  --   aforo int not null default 10,
+  --   reservados int not null default 0
+  -- );
+
+  -- Reservas
+  -- create table if not exists reservas (
+  --   id uuid primary key default gen_random_uuid(),
+  --   mesa_id int not null references mesas(id) on delete restrict,
+  --   responsable text not null,
+  --   contacto text not null,
+  --   correo text not null,
+  --   cantidad int not null check (cantidad between 1 and 10),
+  --   pago_url text,
+  --   invitado jsonb,
+  --   evento jsonb,
+  --   estado text not null default 'pendiente',
+  --   created_at timestamptz not null default now()
+  -- );
+
+  -- alter table mesas enable row level security; alter table reservas enable row level security;
+  -- create policy "mesas_read" on mesas for select using (true);
+  -- create policy "reservas_read" on reservas for select using (true);
+
+  -- create or replace function reserve_seats_v2(
+  --   p_mesa_id int,
+  --   p_cantidad int,
+  --   p_responsable text,
+  --   p_contacto text,
+  --   p_correo text,
+  --   p_pago_url text,
+  --   p_invitado jsonb,
+  --   p_evento jsonb
+  -- ) returns uuid language plpgsql security definer as $$
+  -- declare v_id uuid; v_mesa int;
+  -- begin
+  --   update mesas set reservados = reservados + p_cantidad
+  --   where id = p_mesa_id and reservados + p_cantidad <= aforo
+  --   returning id into v_mesa;
+  --   if not found then raise exception 'SIN_CUPO'; end if;
+  --   insert into reservas (mesa_id,responsable,contacto,correo,cantidad,pago_url,invitado,evento,estado)
+  --   values (v_mesa,p_responsable,p_contacto,p_correo,p_cantidad,p_pago_url,p_invitado,p_evento,'pendiente')
+  --   returning id into v_id;
+  --   return v_id; end; $$;
+  -- grant execute on function reserve_seats_v2(int,int,text,text,text,text,jsonb,jsonb) to anon;
+
+  -- Storage: crear bucket público llamado 'pagos'
+  ===================== -->
+</body>
+</html>
