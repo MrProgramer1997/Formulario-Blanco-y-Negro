@@ -308,21 +308,21 @@ async function loadMesaTopUpInfo(id){
   const libres = Math.max(0,(info.aforo||10)-(info.reservados||0));
   mesaTopUpInfo = {reservados: info.reservados||0, libres};
 
-  // Si está en ventana de top-up (>=8 y <10), tomamos el contacto/correo del primer registro
+  // Si está en ventana de top-up (>=8 y <10), recogemos contacto/correo del primer registro de esa mesa
   if(info.reservados>=8 && info.reservados<10){
     const { data } = await sb
       .from('reservas')
-      .select('texto_contacto,texto_correo,created_at')
+      .select('contacto,correo,created_at')
       .eq('mesa_id', id)
       .order('created_at', {ascending:true})
       .limit(1);
     if(data && data.length){
-      mesaTopUpInfo.contacto = data[0].texto_contacto || null;
-      mesaTopUpInfo.correo   = data[0].texto_correo   || null;
+      mesaTopUpInfo.contacto = data[0].contacto || null;
+      mesaTopUpInfo.correo   = data[0].correo   || null;
     }
   }
   setupCantidadOptions();
-  checkTopUpAuth(); // valida en caso de top-up
+  checkTopUpAuth(); // valida identidad si aplica
 }
 
 function setupCantidadOptions(){
@@ -351,30 +351,39 @@ function setupCantidadOptions(){
     sel.appendChild(header);
   }
 
-  // intenta preservar selección si aplica
+  // intenta preservar selección previa
   const opt = [...sel.options].find(o=>o.value===selected);
   if(opt) sel.value = selected;
 }
 
-/* ===== Validación de identidad para top-up ===== */
+/* ===== Validación flexible de identidad (top-up) ===== */
 function checkTopUpAuth(){
   // Solo aplica si ya hay 8-9 reservados
   if(!mesaTopUpInfo || !(mesaTopUpInfo.reservados>=8 && mesaTopUpInfo.reservados<10)){
     estado.textContent=''; estado.className='hint'; return;
   }
-  const tel = $("contacto").value?.trim() || '';
-  const cor = $("correo").value?.trim().toLowerCase() || '';
-  const ok =
-    (mesaTopUpInfo.contacto && tel && tel === String(mesaTopUpInfo.contacto).trim()) ||
-    (mesaTopUpInfo.correo && cor && cor === String(mesaTopUpInfo.correo).trim().toLowerCase());
+
+  const tel = ($("contacto").value || '').replace(/[^0-9]/g,'').slice(-8); // últimos 8 dígitos
+  const cor = ($("correo").value || '').trim().toLowerCase();
+
+  let ok = false;
+  if(mesaTopUpInfo.contacto){
+    const guardado = String(mesaTopUpInfo.contacto).replace(/[^0-9]/g,'').slice(-8);
+    if(guardado && tel && guardado === tel) ok = true;
+  }
+  if(mesaTopUpInfo.correo && !ok){
+    const guardado = String(mesaTopUpInfo.correo).trim().toLowerCase();
+    if(guardado && cor && guardado === cor) ok = true;
+  }
 
   if(!ok){
-    estado.className='danger';
-    estado.textContent='Los cupos restantes solo pueden ser completados por la misma persona que inició la reserva (mismo WhatsApp o correo).';
+    estado.className = 'danger';
+    estado.innerHTML = '⚠️ Los cupos restantes solo pueden ser completados por la misma persona que inició la reserva (mismo WhatsApp o correo).';
     btnEnviar.disabled = true;
-  }else{
-    estado.textContent=''; estado.className='hint';
-    validateAll();
+  } else {
+    estado.className = 'ok';
+    estado.innerHTML = '✅ Responsable verificado. Puede completar los cupos restantes.';
+    validateAll(); // revalida reglas de suma y habilita botón si todo OK
   }
 }
 
@@ -405,7 +414,7 @@ function renderBloques(){
   lblSuma.textContent = `Seleccionados ${suma} de ${total} cupos`;
   lblSuma.style.color = (suma===total? '#a4a6ad' : '#ff5a5a');
 
-  // SOCIOS: solo Nombre completo + N° de acción/cupo
+  // SOCIOS: Nombre completo + N.º acción/cupo
   boxSoc.innerHTML = "";
   if(s>0){
     const title=document.createElement("h3");
@@ -426,7 +435,7 @@ function renderBloques(){
     }
   }
 
-  // INVITADOS (sin cambios)
+  // INVITADOS
   boxInv.innerHTML = "";
   if(i>0){
     const title=document.createElement("h3"); title.textContent=`Datos de Invitados (${i})`; title.style.margin='0 0 6px 0'; boxInv.appendChild(title);
@@ -477,7 +486,7 @@ function validateAll(){
   const pass = (sumaOK && mesaOK && checkOK);
   btnEnviar.disabled = !pass;
 
-  if(topUp) checkTopUpAuth(); // puede volver a deshabilitar si no coincide identidad
+  if(topUp) checkTopUpAuth(); // puede ajustar el estado y (des)habilitar botón
 }
 
 /* ===== Envío ===== */
