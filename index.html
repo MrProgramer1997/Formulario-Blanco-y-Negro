@@ -2,498 +2,483 @@
 <html lang="es">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Reserva – Fiesta Blanco & Negro</title>
   <meta name="description" content="Formulario de reservas – GitHub Pages + Supabase"/>
+
   <style>
     :root{--bg:#0b0b0d;--card:#141418;--muted:#a4a6ad;--text:#f1f1f3;--accent:#ffffff;--ok:#1aa34a;--warn:#f6c445;--err:#ff5a5a}
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Ubuntu,Arial,sans-serif;line-height:1.45}
-    .wrap{max-width:980px;margin:auto;padding:20px}
-    header{position:sticky;top:0;background:linear-gradient(180deg,#0b0b0dd0,#0b0b0d00);backdrop-filter:saturate(150%) blur(2px);z-index:5}
+    .wrap{max-width:1000px;margin:auto;padding:20px}
+    header{position:sticky;top:0;background:linear-gradient(180deg,#0b0b0de6,#0b0b0d00);backdrop-filter:saturate(150%) blur(2px);z-index:5}
     .title{display:flex;align-items:center;gap:16px}
     .title h1{font-size:clamp(22px,3.2vw,34px);margin:0}
+    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .pill{display:inline-block;padding:6px 10px;border:1px solid #2c2f36;border-radius:999px;background:#0f1013;color:var(--muted);font-size:12px}
     .card{background:var(--card);border:1px solid #22242a;border-radius:16px;padding:20px;box-shadow:0 10px 30px #00000040}
     .grid{display:grid;gap:16px}
     @media (min-width:860px){.grid-2{grid-template-columns:1fr 1fr}}
     label{display:block;font-weight:600;margin-bottom:6px}
     input,select,textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #2c2f36;background:#0f1013;color:var(--text);outline:none}
     input:focus,select:focus,textarea:focus{border-color:#5c6cff;box-shadow:0 0 0 3px #5c6cff30}
-    small{color:var(--muted)}
-    .hint{font-size:12px;color:var(--muted)}
-    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    small.hint{color:var(--muted);display:block}
     .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid #2c2f36;background:#101217;color:var(--text);padding:12px 16px;border-radius:12px;cursor:pointer;text-decoration:none;font-weight:600}
     .btn:hover{background:#151826}
     .btn.primary{background:#5c6cff;border-color:#5c6cff;color:#fff}
-    .btn.ghost{background:#0f1013}
-    .danger{color:var(--err)}
-    .ok{color:var(--ok)}
-    .kpi{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-    .kpi div{background:#0f1013;border:1px dashed #2c2f36;border-radius:12px;padding:12px;text-align:center}
-    figure{margin:0;border-radius:16px;overflow:hidden;border:1px solid #22242a}
-    figcaption{padding:8px 10px;color:var(--muted);font-size:12px;background:#0f1013}
+    .ok{color:var(--ok)} .danger{color:var(--err)} .muted{color:var(--muted)}
     .bank{display:grid;gap:10px}
     .bank .item{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:12px;border-radius:12px;background:#0f1013;border:1px solid #2c2f36}
     .alert{border-left:4px solid var(--warn);background:#17130a;border-radius:12px;padding:12px 14px}
-    .terms{display:flex;gap:10px;align-items:center}
-    .pill{display:inline-block;padding:6px 10px;border:1px solid #2c2f36;border-radius:999px;background:#0f1013;color:var(--muted);font-size:12px}
     footer{color:var(--muted);text-align:center;padding:30px 10px}
-    /* Plano interactivo */
+
+    /* ====== PLANO INTERACTIVO ====== */
     .map-wrap{position:relative;border-radius:16px;overflow:hidden;border:1px solid #22242a}
     .map-img{width:100%;display:block}
     .overlay{position:absolute;inset:0}
-    .mesa-box{position:absolute;border:2px solid #00000088;display:flex;align-items:center;justify-content:center;font-weight:800;text-shadow:0 1px 1px #000a;color:#000;border-radius:6px;cursor:pointer;transition:.15s transform}
-    .mesa-box:hover{transform:scale(1.03)}
-    .m-ok{background:#47d147cc}
-    .m-warn{background:#ffd84dcc}
-    .m-err{background:#ff6b6bcc}
-    /* estado de mesas */
-    .status{display:grid;gap:10px}
-    .status .row{justify-content:space-between}
-    .badge{padding:4px 10px;border-radius:999px;font-weight:700}
-    .b-ok{background:#12d65a;color:#001;}.b-warn{background:#f7c948;color:#001}.b-err{background:#ff6b6b;color:#fff}
+    .mesa{position:absolute;border:2px solid transparent;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900}
+    .mesa .n{font-size:14px;text-shadow:0 1px 2px #0009}
+    .mesa.m-ok{background:#1aa34aCC;border-color:#0c7a35AA}
+    .mesa.m-warn{background:#f6c445CC;border-color:#b68900AA;color:#000}
+    .mesa.m-err{background:#ff5a5aCC;border-color:#b30000AA}
+    .mesa:hover{outline:3px solid #ffffff55}
+    .mesa.selected{outline:4px solid #6da3ff; box-shadow:0 0 0 6px #6da3ff30}
+    .mesa.selected .n{color:#fff}
+
+    /* Lista desplegable estado de mesas */
+    details.state {background:#0f1013;border:1px solid #2c2f36;border-radius:12px;padding:12px}
+    details.state > summary{cursor:pointer;font-weight:700;list-style:none}
+    details.state > summary::-webkit-details-marker{display:none}
+    .state-list{margin:10px 0 0 0;padding-left:18px;max-height:420px;overflow:auto}
+    .state-item{display:flex;gap:8px;align-items:center;margin:6px 0}
+    .dot{width:8px;height:8px;border-radius:99px;display:inline-block}
+    .dot.ok{background:var(--ok)} .dot.warn{background:var(--warn)} .dot.err{background:var(--err)}
+    .tag{font-size:12px;padding:2px 8px;border-radius:999px;background:#0f1013;border:1px solid #2c2f36}
+    .tag.ok{background:#0d2;color:#001} .tag.warn{background:#fb0;color:#000} .tag.err{background:#f55;color:#fff}
+
+    /* Bloque consentimiento + botón juntos */
+    .consent{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .consent .btn{margin-left:auto}
   </style>
+
+  <!-- Supabase SDK v2 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-  <header class="wrap">
-    <div class="title">
-      <img src="./assets/plano-blanco-negro.jpg" alt="Plano de ubicación de mesas" style="width:64px;height:64px;object-fit:cover;border-radius:12px;border:1px solid #2c2f36"/>
-      <div>
-        <h1>Reserva de mesas · Fiesta Blanco & Negro</h1>
-        <div class="row"><span class="pill">Sábado 22 de noviembre</span><span class="pill">Salón Rialto & Lobby</span><span class="pill">Horario: 7:00 p.m. – 5:00 a.m.</span></div>
+<header class="wrap">
+  <div class="title">
+    <img src="./assets/plano-blanco-negro.jpg" alt="Plano de ubicación de mesas" style="width:64px;height:64px;object-fit:cover;border-radius:12px;border:1px solid #2c2f36"/>
+    <div>
+      <h1>Reserva de mesas · Fiesta Blanco & Negro</h1>
+      <div class="row">
+        <span class="pill">Sábado 22 de noviembre</span>
+        <span class="pill">Salón Rialto & Lobby</span>
+        <span class="pill">Horario: 7:00 p.m. – 5:00 a.m.</span>
       </div>
     </div>
-  </header>
+  </div>
+</header>
 
-  <main class="wrap grid" style="margin-top:14px">
-    <!-- MAPA + OVERLAY -->
-    <section class="card grid">
-      <div class="map-wrap" id="map-wrap">
-        <img src="./assets/plano-blanco-negro.jpg" alt="Plano de mesas" class="map-img" id="map-img"/>
-        <div class="overlay" id="overlay"></div>
+<main class="wrap grid" style="margin-top:14px">
+  <!-- MAPA + OVERLAY -->
+  <section class="card grid">
+    <div class="map-wrap" id="map-wrap">
+      <img src="./assets/plano-blanco-negro.jpg" alt="Plano de mesas" class="map-img" id="map-img"/>
+      <div class="overlay" id="overlay" aria-live="polite"></div>
+    </div>
+    <small class="muted">Haz clic sobre una mesa <strong>disponible</strong> para seleccionarla. La ubicación puede variar por montaje.</small>
+
+    <!-- Lista desplegable de estado -->
+    <details class="state" id="estado-mesas" open>
+      <summary>Estado de mesas</summary>
+      <div id="state-list" class="state-list"></div>
+    </details>
+  </section>
+
+  <!-- ALERTA PENALIDAD -->
+  <section class="card alert">
+    <strong>Importante:</strong> En el caso de reservar y no asistir, el club facturará dentro de la cuota de sostenimiento, un valor de <strong>$200.000</strong> por persona.
+  </section>
+
+  <!-- FORMULARIO -->
+  <section class="card">
+    <h2 style="margin-top:0">Formulario de reserva</h2>
+    <form id="form-reserva">
+      <div class="grid grid-2">
+        <div>
+          <label for="nombres">Nombre del responsable</label>
+          <input id="nombres" name="nombres" required placeholder="Nombre y apellido"/>
+        </div>
+        <div>
+          <label for="contacto">Teléfono / WhatsApp</label>
+          <input id="contacto" name="contacto" inputmode="tel" placeholder="312 759 6112" required/>
+        </div>
+        <div>
+          <label for="correo">Correo electrónico</label>
+          <input id="correo" type="email" name="correo" placeholder="correo@ejemplo.com" required/>
+        </div>
+        <div>
+          <label for="mesa">Número de mesa</label>
+          <input id="mesa" name="mesa" placeholder="Haz clic en el plano" readonly required/>
+          <small id="mesa-hint" class="hint muted"></small>
+        </div>
+        <div>
+          <label for="cantidad">Cantidad de puestos a reservar</label>
+          <select id="cantidad" name="cantidad" required>
+            <option value="" selected disabled>Selecciona (mínimo 8)</option>
+            <option value="8">8</option><option value="9">9</option><option value="10">10</option>
+          </select>
+          <small class="hint">Cada mesa tiene máximo 10 puestos.</small>
+        </div>
+        <div>
+          <label>¿El responsable también asiste?</label>
+          <select id="resp-asiste">
+            <option value="si" selected>Sí</option>
+            <option value="no">No</option>
+          </select>
+          <small class="hint">Si asiste, se descuenta 1 cupo como <strong>Socio</strong> y se pide N.º de acción.</small>
+        </div>
       </div>
-      <figcaption>Haz clic sobre una mesa <strong>disponible</strong> para seleccionarla. La ubicación puede variar por montaje.</figcaption>
 
-      <!-- ESTADO DE MESAS -->
-      <div class="card">
-        <h3 style="margin:0 0 6px">Estado de mesas</h3>
-        <div id="estado-mesas" class="status"></div>
-        <small class="hint">Se actualiza automáticamente cada 15 segundos.</small>
-      </div>
-    </section>
-
-    <!-- ALERTA PENALIDAD -->
-    <section class="card alert">
-      <strong>Importante:</strong> En el caso de reservar y no asistir, el club facturará dentro de la cuota de sostenimiento, un valor de <strong>$200.000</strong> por persona.
-    </section>
-
-    <!-- FORMULARIO -->
-    <section class="card" id="form-card">
-      <h2 style="margin-top:0">Formulario de reserva</h2>
-      <form id="form-reserva">
+      <!-- DISTRIBUCIÓN -->
+      <div class="card" style="background:#0f1013;border:1px dashed #2c2f36;margin-top:10px">
+        <label style="font-weight:700">Distribuye los cupos</label>
         <div class="grid grid-2">
           <div>
-            <label for="nombres">Nombre del responsable</label>
-            <input id="nombres" name="nombres" required placeholder="Nombre y apellido" />
+            <label for="cupos_socios">Cupos para Socios</label>
+            <input id="cupos_socios" type="number" min="0" max="10" value="1"/>
+            <small class="hint">Se descuenta automáticamente si el responsable asiste.</small>
           </div>
           <div>
-            <label for="contacto">Teléfono / WhatsApp</label>
-            <input id="contacto" name="contacto" inputmode="tel" placeholder="312 759 6112" required />
+            <label for="cupos_invitados">Cupos para Invitados</label>
+            <input id="cupos_invitados" type="number" min="0" max="10" value="0"/>
           </div>
           <div>
-            <label for="correo">Correo electrónico</label>
-            <input id="correo" type="email" name="correo" placeholder="correo@ejemplo.com" required />
-          </div>
-          <div>
-            <label for="mesa">Número de mesa</label>
-            <input id="mesa" name="mesa" required placeholder="Haz clic en el mapa o lista" />
-          </div>
-          <div>
-            <label for="cantidad">Cantidad de puestos a reservar</label>
-            <select id="cantidad" name="cantidad" required>
-              <option value="" selected disabled>Elige la mesa primero</option>
-            </select>
-            <small class="hint" id="ayuda-cantidad">Cada mesa tiene máximo 10 puestos.</small>
-          </div>
-          <div>
-            <label for="resp-asiste">¿El responsable también asiste?</label>
-            <select id="resp-asiste">
-              <option value="si" selected>Sí</option>
-              <option value="no">No</option>
-            </select>
-            <small class="hint">Si asiste, se descuenta 1 cupo como <b>Socio</b> y se pedirá N.° de acción.</small>
+            <small class="hint" id="suma-cupos">Debe sumar exactamente la cantidad seleccionada.</small>
           </div>
         </div>
+      </div>
 
-        <!-- DISTRIBUCIÓN DE CUPOS -->
-        <div class="card" style="background:#0f1013;border:1px dashed #2c2f36;margin-top:12px">
-          <label style="font-weight:700">Distribuye los cupos</label>
-          <div class="grid grid-2">
-            <div>
-              <label for="cupos_socios">Cupos para <strong>Socios</strong></label>
-              <input id="cupos_socios" type="number" min="0" value="0" />
-              <small class="hint">Se descuenta automáticamente si el responsable asiste.</small>
-            </div>
-            <div>
-              <label for="cupos_invitados">Cupos para <strong>Invitados</strong></label>
-              <input id="cupos_invitados" type="number" min="0" value="0" />
-            </div>
-            <div>
-              <small class="hint" id="suma-cupos">Debe sumar exactamente a la cantidad seleccionada.</small>
-            </div>
+      <!-- DATOS DETALLADOS -->
+      <div id="bloques-datos" class="grid" style="margin-top:8px">
+        <div id="datos-socios" class="grid"></div>
+        <div id="datos-invitados" class="grid"></div>
+      </div>
+
+      <!-- COSTO -->
+      <div class="grid grid-2" style="margin-top:8px">
+        <div>
+          <label>Total a pagar por Invitados</label>
+          <div class="card" style="padding:12px;background:#0f1013;border:1px solid #2c2f36">
+            <div id="resumen-pago" class="row">0 invitados × $250.000 = <strong>$0</strong></div>
+            <small class="hint">Socios: $0 según protocolo.</small>
           </div>
         </div>
-
-        <!-- FORMULARIOS SEGÚN TIPO -->
-        <div class="grid" id="bloques-datos" style="margin-top:8px">
-          <div class="grid" id="datos-socios"></div>
-          <div class="grid" id="datos-invitados"></div>
-        </div>
-
-        <hr style="border:0;border-top:1px solid #2c2f36;margin:18px 0"/>
-
-        <!-- COSTO Y BANCOS -->
-        <div class="grid grid-2">
-          <div>
-            <label>Total a pagar por Invitados</label>
-            <div class="card" style="padding:12px;background:#0f1013;border:1px solid #2c2f36">
-              <div id="resumen-pago" class="row">0 invitados × $250.000 = <strong>$0</strong></div>
-              <small class="hint">Socios: $0 según protocolo.</small>
-            </div>
-          </div>
-          <div>
-            <label>Pagos en bancos</label>
-            <div class="bank" style="margin-top:8px">
-              <div class="item"><span>Davivienda • CC <strong>126669999149</strong></span><button class="btn" type="button" data-copy="126669999149">Copiar</button></div>
-              <div class="item"><span>Bancolombia • CC <strong>07322164601</strong></span><button class="btn" type="button" data-copy="07322164601">Copiar</button></div>
-              <div class="row"><a class="btn ghost" href="https://www.davivienda.com/" target="_blank" rel="noopener">Ir a Davivienda</a><a class="btn ghost" href="https://www.bancolombia.com/" target="_blank" rel="noopener">Ir a Bancolombia</a></div>
-            </div>
+        <div>
+          <label>Transferencias</label>
+          <div class="bank">
+            <div class="item"><span>Davivienda • CC <strong>126669999149</strong></span><a class="btn" href="https://www.davivienda.com/" target="_blank" rel="noopener">Ir a Davivienda</a></div>
+            <div class="item"><span>Bancolombia • CC <strong>07322164601</strong></span><a class="btn" href="https://www.bancolombia.com/" target="_blank" rel="noopener">Ir a Bancolombia</a></div>
           </div>
         </div>
+      </div>
 
-        <p class="terms" style="margin-top:12px">
-          <input id="acepto" type="checkbox" required />
-          <label for="acepto">Confirmo que reservo mínimo 8 puestos (en la primera reserva de la mesa) y acepto que, en caso de no asistir, se cobrará $200.000 por persona en mi cuota de sostenimiento.</label>
-        </p>
+      <!-- CONSENTIMIENTO + ENVIAR -->
+      <div class="consent" style="margin-top:14px">
+        <label class="row" style="gap:10px;align-items:flex-start">
+          <input id="acepto" type="checkbox" required/>
+          <span>Confirmo que reservo mínimo 8 puestos y acepto que, en caso de no asistir, se cobrará $200.000 por persona en mi cuota de sostenimiento.</span>
+        </label>
+        <button class="btn primary" type="submit" id="btn-enviar" disabled>Reservar mesa</button>
+      </div>
 
-        <div class="row" style="margin-top:0">
-          <button class="btn primary" type="submit" id="btn-enviar">Reservar mesa</button>
-          <a class="btn ghost" target="_blank" rel="noopener" id="btn-whatsapp" href="https://wa.me/573127596112">Hablar por WhatsApp</a>
+      <p id="estado" class="hint" style="margin-top:10px"></p>
+    </form>
+  </section>
+
+  <!-- PROTOCOLO -->
+  <section class="card grid">
+    <h3 style="margin:0">Protocolo y condiciones</h3>
+    <ul>
+      <li><strong>Código de vestuario:</strong> Blanco / negro.</li>
+      <li>Mujeres: vestido o conjunto de pantalón elegante.</li>
+      <li>Hombres: pantalón y camisa.</li>
+      <li>Edad mínima: 18 años.</li>
+      <li>Valor por persona: corporado $0; invitado $250.000.</li>
+      <li>Acomodación: mesas rectangulares de 8 (máx. 10) en Salón Rialto y Lobby. Para grupos de 2–7, WhatsApp 3127596112.</li>
+      <li>Reservas/cancelaciones hasta jueves 20 de noviembre o hasta agotar disponibilidad.</li>
+      <li>Pasos: (1) elige mesa; (2) completa el formulario; (3) paga invitados y registra en oficina de eventos con el soporte.</li>
+      <li>En caso de no cumplir con el mínimo de puestos, el club podrá reubicar su grupo.</li>
+      <li>La ubicación de mesas puede cambiar según necesidades de montaje.</li>
+    </ul>
+  </section>
+</main>
+
+<footer>© Club Campestre Pereira – Fiesta Blanco & Negro</footer>
+
+<script>
+/* ===== Configuración Supabase ===== */
+const SUPABASE_URL = "https://cmrydhzpcuklfvigboka.supabase.co";        // <-- reemplazar
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcnlkaHpwY3VrbGZ2aWdib2thIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzU1NDIsImV4cCI6MjA3ODExMTU0Mn0.SzLh-CoahU63AISJwPKJLJkAf-JQ2qxAwUt69NsPKgQ";                        // <-- reemplazar
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ===== Utilidades ===== */
+const $ = (id)=>document.getElementById(id);
+const overlay = $("overlay");
+const stateList = $("state-list");
+const mesaInput = $("mesa");
+const mesaHint = $("mesa-hint");
+const cantidadSel = $("cantidad");
+const inptSoc = $("cupos_socios"), inptInv = $("cupos_invitados");
+const boxSoc = $("datos-socios"), boxInv = $("datos-invitados");
+const lblSuma = $("suma-cupos");
+const form = $("form-reserva");
+const btnEnviar = $("btn-enviar");
+const respAsiste = $("resp-asiste");
+const estado = $("estado");
+
+let COORDS = [];         // desde /assets/mesas-coords.json
+let MESAS = [];          // desde supabase (id, nombre, aforo, reservados)
+let selectedMesa = null; // {id, libres}
+
+/* ===== Plano: cargar coords + mesas ===== */
+async function loadCoords(){
+  const r = await fetch("./assets/mesas-coords.json?ts="+Date.now());
+  COORDS = await r.json();
+}
+
+async function loadMesas(){
+  const { data, error } = await sb.from("mesas").select("id,nombre,aforo,reservados").order("id");
+  if(error){ console.error(error); return; }
+  MESAS = data || [];
+}
+
+/* ===== Render overlay ===== */
+function renderOverlay(){
+  overlay.innerHTML = "";
+  const wrap = document.getElementById("map-wrap");
+  const W = wrap.clientWidth, H = wrap.clientHeight;
+  COORDS.forEach(c=>{
+    const info = MESAS.find(x=>x.id===c.id) || {aforo:10,reservados:0,nombre:""};
+    const libres = Math.max(0, (info.aforo||10) - (info.reservados||0));
+    let cls = "m-ok";
+    if(libres===0) cls = "m-err";
+    else if(libres<=2) cls = "m-warn";
+    const div = document.createElement("div");
+    div.className = `mesa ${cls}`;
+    div.style.left   = (c.left)+"%";
+    div.style.top    = (c.top)+"%";
+    div.style.width  = (c.width)+"%";
+    div.style.height = (c.height)+"%";
+    div.dataset.id = c.id;
+    div.title = `Mesa ${c.id} – libres: ${libres}`;
+    div.innerHTML = `<span class="n">${c.id}</span>`;
+    if(selectedMesa && selectedMesa.id===c.id) div.classList.add("selected");
+    if(libres===0){
+      div.style.pointerEvents="none";
+      div.title = `Mesa ${c.id} – llena`;
+    }
+    div.addEventListener("click", ()=> selectMesa(c.id, libres));
+    overlay.appendChild(div);
+  });
+}
+
+/* ===== Lista desplegable de estado ===== */
+function renderStateList(){
+  stateList.innerHTML = "";
+  MESAS.forEach(m=>{
+    const libres = Math.max(0, (m.aforo||10) - (m.reservados||0));
+    let cls="ok", txt="Disponible";
+    if(libres===0){ cls="err"; txt="LLENA"; }
+    else if(libres<=2){ cls="warn"; txt="Pocos cupos"; }
+    const li = document.createElement("div");
+    li.className = "state-item";
+    li.innerHTML = `
+      <span class="dot ${cls}"></span>
+      <span>Mesa ${m.id} – ${m.nombre||"Salón"}</span>
+      <span class="tag ${cls}" style="margin-left:auto">${txt} (${libres})</span>
+    `;
+    stateList.appendChild(li);
+  });
+}
+
+/* ===== Seleccionar mesa ===== */
+function selectMesa(id, libres){
+  selectedMesa = { id, libres };
+  mesaInput.value = String(id);
+  mesaHint.textContent = (libres>0) ? `Mesa ${id} seleccionada. Cupos libres: ${libres}` : "Mesa sin cupo";
+  renderOverlay();
+  // Scroll suave al formulario para que se vea que quedó seleccionada
+  form.scrollIntoView({behavior:"smooth", block:"start"});
+  validateAll();
+}
+
+/* ===== Bloques dinámicos (socios/invitados) ===== */
+function renderBloques(){
+  // ajuste por responsable
+  const total = Number(cantidadSel.value||0);
+  const asiste = (respAsiste.value==="si");
+  let s = Math.min(10, Math.max(0, Number(inptSoc.value||0)));
+  let i = Math.min(10, Math.max(0, Number(inptInv.value||0)));
+  if(asiste){
+    if(s===0) s=1; // fuerza al menos 1 socio
+    inptSoc.value = s;
+  }
+  // Validar límites y suma
+  const suma = s+i;
+  lblSuma.textContent = `Seleccionados ${suma} de ${total} cupos`;
+  lblSuma.style.color = (suma===total? '#a4a6ad' : '#ff5a5a');
+
+  // SOCIOS
+  boxSoc.innerHTML = "";
+  if(s>0){
+    const title=document.createElement("h3"); title.textContent=`Datos de Socios (${s})`; title.style.margin='0 0 6px 0'; boxSoc.appendChild(title);
+    for(let x=1;x<=s;x++){
+      const wrap=document.createElement('div'); wrap.className='grid grid-2';
+      const pre = (x===1 && respAsiste.value==="si") ? " – Responsable" : "";
+      wrap.innerHTML = `
+        <div><label>Socio ${x}${pre} – Nombre</label><input id="socio_nombre_${x}" required /></div>
+        <div><label>Socio ${x}${pre} – Apellido</label><input id="socio_apellido_${x}" required /></div>
+        <div><label>Socio ${x}${pre} – Celular/WhatsApp</label><input id="socio_cel_${x}" inputmode="tel" required /></div>
+        <div><label>Socio ${x}${pre} – N.º de acción/cupo</label><input id="socio_accion_${x}" required /></div>
+      `;
+      boxSoc.appendChild(wrap);
+    }
+    // Prellenar responsable si asiste
+    if(respAsiste.value==="si"){
+      $("socio_nombre_1").value = ($("nombres").value||"").split(" ")[0]||"";
+      $("socio_apellido_1").value = ($("nombres").value||"").split(" ").slice(1).join(" ");
+      $("socio_cel_1").value = $("contacto").value||"";
+    }
+  }
+
+  // INVITADOS
+  boxInv.innerHTML = "";
+  if(i>0){
+    const title=document.createElement("h3"); title.textContent=`Datos de Invitados (${i})`; title.style.margin='0 0 6px 0'; boxInv.appendChild(title);
+    for(let x=1;x<=i;x++){
+      const wrap=document.createElement('div'); wrap.className='grid grid-2';
+      wrap.innerHTML = `
+        <div><label>Invitado ${x} – Tipo de documento</label>
+          <select id="inv_tipo_${x}" required><option value="">Selecciona…</option><option>CC</option><option>TI</option><option>CE</option><option>PAS</option><option>Otro</option></select>
         </div>
+        <div><label>Invitado ${x} – Número de documento</label><input id="inv_doc_${x}" required /></div>
+        <div><label>Invitado ${x} – Primer Nombre</label><input id="inv_pnom_${x}" required /></div>
+        <div><label>Invitado ${x} – Segundo Nombre</label><input id="inv_snom_${x}" /></div>
+        <div><label>Invitado ${x} – Primer Apellido</label><input id="inv_pape_${x}" required /></div>
+        <div><label>Invitado ${x} – Segundo Apellido</label><input id="inv_sape_${x}" /></div>
+        <div><label>Invitado ${x} – Correo electrónico</label><input id="inv_cor_${x}" type="email" required /></div>
+        <div><label>Invitado ${x} – Número de celular</label><input id="inv_cel_${x}" inputmode="tel" required /></div>
+      `;
+      boxInv.appendChild(wrap);
+    }
+  }
+  actualizarPago();
+  validateAll();
+}
 
-        <p id="estado" class="hint" style="margin-top:10px"></p>
-      </form>
-    </section>
+/* ===== Pago invitados ===== */
+function actualizarPago(){
+  const invitados = Math.min(10, Math.max(0, Number(inptInv.value||0)));
+  const total = invitados * 250000;
+  const fmt = (n)=> n.toLocaleString('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0});
+  document.getElementById('resumen-pago').innerHTML = `${invitados} invitado${invitados===1?'':'s'} × $250.000 = <strong>${fmt(total)}</strong>`;
+  return total;
+}
 
-    <!-- PROTOCOLO -->
-    <section class="card grid">
-      <h3 style="margin:0">Protocolo y condiciones</h3>
-      <ul>
-        <li>Código de vestuario: <b>Blanco / negro</b>.</li>
-        <li>Mujeres: vestido o conjunto de pantalón elegante.</li>
-        <li>Hombres: pantalón y camisa.</li>
-        <li>Edad mínima: 18 años.</li>
-        <li>Valor por persona: corporado $0; invitado $250.000.</li>
-        <li>Acomodación: mesas rectangulares de 8 (máx. 10) en Salón Rialto y Lobby. Para grupos de 2–7, escribir a WhatsApp 3127596112.</li>
-        <li>Reservas/cancelaciones hasta jueves 20 de noviembre o hasta agotar disponibilidad.</li>
-        <li>Pasos: (1) revise y elija mesa; (2) complete este formulario; (3) pague invitados y registre en oficina de eventos con el soporte.</li>
-        <li>En caso de no cumplir con el mínimo de puestos en la primera reserva de la mesa, el club podrá reubicar su grupo.</li>
-        <li>La ubicación de mesas puede cambiar según necesidades de montaje.</li>
-      </ul>
-    </section>
-  </main>
+/* ===== Validaciones globales ===== */
+function validateAll(){
+  const cantidad = Number(cantidadSel.value||0);
+  const s = Math.min(10, Math.max(0, Number(inptSoc.value||0)));
+  const i = Math.min(10, Math.max(0, Number(inptInv.value||0)));
+  const sumaOK = (s+i) === cantidad && cantidad>=8 && cantidad<=10;
+  const mesaOK = !!mesaInput.value;
+  const checkOK = $("acepto").checked;
+  btnEnviar.disabled = !(sumaOK && mesaOK && checkOK);
+}
 
-  <footer>© Club Campestre Pereira – Fiesta Blanco & Negro</footer>
-
-  <script>
-    /* ====== CONFIGURACIÓN SUPABASE ====== */
-    const SUPABASE_URL = "https://TU-PROYECTO.supabase.co";   // <-- REEMPLAZA
-    const SUPABASE_ANON_KEY = "TU-ANON-KEY";                   // <-- REEMPLAZA
-    const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    /* ====== UTILIDADES ====== */
-    const $ = (id)=>document.getElementById(id);
-    const estado = $("estado");
-    const cantidadSel = $("cantidad");
-    const form = $("form-reserva");
-    const overlay = $("overlay");
-    const estadoMesasBox = $("estado-mesas");
-    let mesas = [];           // {id, nombre, aforo, reservados}
-    let mesaSel = null;       // mesa seleccionada (obj)
-    let coords = [];          // coordenadas del plano (assets/mesas-coords.json)
-
-    const copiarBtns = ()=>document.querySelectorAll('[data-copy]').forEach(btn=>{
-      btn.addEventListener('click', async ()=>{
-        try{await navigator.clipboard.writeText(btn.dataset.copy);btn.textContent='Copiado';setTimeout(()=>btn.textContent='Copiar',1500);}catch(err){alert('No se pudo copiar');}
+/* ===== Envío ===== */
+form.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  if(btnEnviar.disabled) return;
+  btnEnviar.disabled = true; estado.textContent='Procesando…'; estado.className='hint';
+  try{
+    const cantidad = Number(cantidadSel.value||0);
+    const socios=[], invitados=[];
+    for(let x=1;x<=Number(inptSoc.value||0);x++){
+      socios.push({
+        nombre: $("socio_nombre_"+x)?.value||"",
+        apellido: $("socio_apellido_"+x)?.value||"",
+        celular: $("socio_cel_"+x)?.value||"",
+        accion: $("socio_accion_"+x)?.value||""
       });
+    }
+    for(let x=1;x<=Number(inptInv.value||0);x++){
+      invitados.push({
+        tipo: $("inv_tipo_"+x)?.value||"",
+        documento: $("inv_doc_"+x)?.value||"",
+        pnombre: $("inv_pnom_"+x)?.value||"",
+        snombre: $("inv_snom_"+x)?.value||null,
+        papellido: $("inv_pape_"+x)?.value||"",
+        sapellido: $("inv_sape_"+x)?.value||null,
+        correo: $("inv_cor_"+x)?.value||"",
+        celular: $("inv_cel_"+x)?.value||""
+      });
+    }
+    const grupo = { socios, invitados, total:cantidad, resp_asiste: (respAsiste.value==="si") };
+
+    const { data, error } = await sb.rpc('reserve_seats_v2',{
+      p_mesa_id: Number(mesaInput.value),
+      p_cantidad: cantidad,
+      p_responsable: $("nombres").value,
+      p_contacto: $("contacto").value,
+      p_correo: $("correo").value,
+      p_pago_url: null,   // ya no se usa soporte
+      p_invitado: grupo,
+      p_evento: null
     });
 
-    function fmt(n){return n.toLocaleString('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0});}
-
-    function autoScrollToForm(){
-      document.getElementById('form-card').scrollIntoView({behavior:'smooth',block:'start'});
-    }
-
-    /* ====== RENDER OVERLAY ====== */
-    function renderOverlay(){
-      overlay.innerHTML='';
-      if(!coords.length || !mesas.length) return;
-      const map = document.getElementById('map-img');
-      const W = map.clientWidth, H = map.clientHeight;
-
-      coords.forEach(c=>{
-        const m = mesas.find(x=>x.id===c.id);
-        if(!m) return;
-        const resto = m.aforo - m.reservados;
-        const full = resto<=0;
-        const pocos = !full && resto<=2;
-        const cls = full ? 'm-err' : (pocos? 'm-warn' : 'm-ok');
-
-        const box = document.createElement('div');
-        box.className = `mesa-box ${cls}`;
-        box.style.left   = (c.left * W / 100) + 'px';
-        box.style.top    = (c.top  * H / 100) + 'px';
-        box.style.width  = (c.width * W / 100) + 'px';
-        box.style.height = (c.height* H / 100) + 'px';
-        box.dataset.id = m.id;
-        box.textContent = m.id;
-
-        if(full){ box.style.opacity = .6; box.style.cursor='not-allowed'; }
-        box.addEventListener('click',()=> onPickMesa(m));
-        overlay.appendChild(box);
-      });
-    }
-
-    /* ====== ESTADO DE MESAS ====== */
-    function renderEstadoMesas(){
-      estadoMesasBox.innerHTML='';
-      mesas.forEach(m=>{
-        const li = document.createElement('div');
-        li.className='row';
-        const resto = m.aforo - m.reservados;
-        let badge = `<span class="badge b-ok">Disponible (${resto})</span>`;
-        if(resto<=0) badge = `<span class="badge b-err">Ocupada</span>`;
-        else if(resto<=2) badge = `<span class="badge b-warn">Pocos cupos (${resto})</span>`;
-        li.innerHTML = `<div>• Mesa ${m.id} – ${m.nombre}</div>${badge}`;
-        li.style.cursor = resto>0 ? 'pointer':'default';
-        if(resto>0) li.addEventListener('click',()=> onPickMesa(m));
-        estadoMesasBox.appendChild(li);
-      });
-    }
-
-    /* ====== CANTIDAD DINÁMICA ====== */
-    function setCantidadOptionsForMesa(m){
-      const resto = m.aforo - m.reservados;
-      const primeraReserva = (m.reservados===0);
-      const min = primeraReserva ? 8 : 1;
-      const max = resto;
-      cantidadSel.innerHTML='';
-      const ph = document.createElement('option');
-      ph.value=''; ph.disabled=true; ph.selected=true;
-      ph.textContent = `Selecciona (mín ${min}, máx ${max})`;
-      cantidadSel.appendChild(ph);
-      for(let n=min; n<=max; n++){
-        const op=document.createElement('option');
-        op.value=String(n); op.textContent=String(n);
-        cantidadSel.appendChild(op);
+    if(error){
+      if((error.message||'').includes('SIN_CUPO')){
+        estado.textContent='La mesa no tiene cupo suficiente (alguien la tomó antes).'; estado.className='danger';
+        await reloadAll(); btnEnviar.disabled=false; return;
       }
-      $("ayuda-cantidad").textContent = primeraReserva
-        ? "Primera reserva de esta mesa: mínimo 8."
-        : "Mesa con reservas previas: puedes reservar desde 1 hasta los cupos restantes.";
+      throw error;
     }
+    const totalPago = actualizarPago();
+    const fmt = (n)=> n.toLocaleString('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0});
+    estado.innerHTML = `¡Reserva registrada! ID: <strong>${data}</strong>. Total a pagar por invitados: <strong>${fmt(totalPago)}</strong>.`;
+    estado.className='ok';
+    await reloadAll();
+  }catch(err){
+    console.error(err);
+    estado.textContent='Ocurrió un error al reservar. Intenta de nuevo.'; estado.className='danger';
+  }finally{
+    btnEnviar.disabled=false;
+  }
+});
 
-    /* ====== AL ELEGIR MESA ====== */
-    function onPickMesa(m){
-      mesaSel = m;
-      $("mesa").value = m.id;
-      setCantidadOptionsForMesa(m);
-      // resaltar caja
-      overlay.querySelectorAll('.mesa-box').forEach(b=>b.style.outline='');
-      const box = overlay.querySelector(`.mesa-box[data-id="${m.id}"]`);
-      if(box){ box.style.outline='3px solid #5c6cff'; }
-      autoScrollToForm();
-    }
+/* ===== Eventos UI ===== */
+["change","input"].forEach(evt=>{
+  [cantidadSel,inptSoc,inptInv,respAsiste].forEach(el=> el.addEventListener(evt, renderBloques));
+  ["nombres","contacto"].forEach(id=> $(id).addEventListener(evt, renderBloques));
+  $("acepto").addEventListener(evt, validateAll);
+});
 
-    /* ====== FORM DINÁMICO (socios/invitados) ====== */
-    const inptSoc = $("cupos_socios"), inptInv = $("cupos_invitados");
-    const boxSoc = $("datos-socios"), boxInv = $("datos-invitados");
-    const lblSuma = $("suma-cupos");
+/* ===== Auto refresh ===== */
+async function reloadAll(){
+  await loadMesas();
+  renderOverlay();
+  renderStateList();
+}
+setInterval(reloadAll, 15000);
 
-    function validarSuma(){
-      const total = Number(cantidadSel.value||0);
-      const s = Number(inptSoc.value||0), i = Number(inptInv.value||0);
-      const suma = s+i;
-      lblSuma.textContent = `Seleccionados ${suma} de ${total} cupos`;
-      lblSuma.style.color = (suma===total? '#a4a6ad' : '#ff5a5a');
-      return total>0 && suma===total;
-    }
-
-    function renderBloques(){
-      // ajustar socios según responsable
-      const respSi = $("resp-asiste").value==='si';
-      let sociosSolic = Number(inptSoc.value||0);
-      if(respSi && sociosSolic>0){ /* ok */ }
-      // render
-      boxSoc.innerHTML = '';
-      const ns = Number(inptSoc.value||0) + (respSi?1:0);
-      if(ns>0){
-        const title = document.createElement('h3'); title.textContent = `Datos de Socios (${ns})`; title.style.margin='0'; boxSoc.appendChild(title);
-        // Responsable primero si asiste
-        if(respSi){
-          const wrap=document.createElement('div'); wrap.className='grid grid-2';
-          wrap.innerHTML = `
-            <div><label>Socio (Responsable) – Nombre completo</label><input id="socio_nombre_res" required value="${$("nombres").value||""}"/></div>
-            <div><label>Socio (Responsable) – Cédula</label><input id="socio_cc_res" required /></div>
-            <div><label>Socio (Responsable) – Celular/WhatsApp</label><input id="socio_cel_res" inputmode="tel" required value="${$("contacto").value||""}"/></div>
-            <div><label>Socio (Responsable) – N° de acción/cupo</label><input id="socio_accion_res" required /></div>`;
-          boxSoc.appendChild(wrap);
-        }
-        // Restantes
-        const base = respSi?1:0;
-        for(let x=1;x<=Number(inptSoc.value||0);x++){
-          const idx = base + x;
-          const wrap=document.createElement('div'); wrap.className='grid grid-2';
-          wrap.innerHTML = `
-            <div><label>Socio ${idx} – Nombre completo</label><input id="socio_nombre_${x}" required /></div>
-            <div><label>Socio ${idx} – Cédula</label><input id="socio_cc_${x}" required /></div>
-            <div><label>Socio ${idx} – Celular/WhatsApp</label><input id="socio_cel_${x}" inputmode="tel" required /></div>
-            <div><label>Socio ${idx} – N° de acción/cupo</label><input id="socio_accion_${x}" required /></div>`;
-          boxSoc.appendChild(wrap);
-        }
-      }
-      // Invitados
-      boxInv.innerHTML = '';
-      const ni = Number(inptInv.value||0);
-      if(ni>0){
-        const title = document.createElement('h3'); title.textContent = `Datos de Invitados (${ni})`; title.style.margin='0'; boxInv.appendChild(title);
-        for(let x=1;x<=ni;x++){
-          const wrap=document.createElement('div'); wrap.className='grid grid-2';
-          wrap.innerHTML = `
-            <div><label>Invitado ${x} – Tipo de documento</label>
-              <select id="inv_tipo_${x}" required><option value="">Selecciona…</option><option>CC</option><option>TI</option><option>CE</option><option>PAS</option><option>Otro</option></select>
-            </div>
-            <div><label>Invitado ${x} – Número de documento</label><input id="inv_doc_${x}" required /></div>
-            <div><label>Invitado ${x} – Nombre completo</label><input id="inv_nom_${x}" required /></div>
-            <div><label>Invitado ${x} – Correo electrónico</label><input id="inv_cor_${x}" type="email" required /></div>
-            <div><label>Invitado ${x} – Número de celular</label><input id="inv_cel_${x}" inputmode="tel" required /></div>`;
-          boxInv.appendChild(wrap);
-        }
-      }
-      actualizarPago();
-    }
-
-    function actualizarPago(){
-      const invitados = Number(inptInv.value||0);
-      const total = invitados * 250000;
-      $("resumen-pago").innerHTML = `${invitados} invitados × $250.000 = <strong>${fmt(total)}</strong>`;
-      return total;
-    }
-
-    ['change','input'].forEach(evt=>{
-      [cantidadSel,inptSoc,inptInv,$("resp-asiste"),$("nombres"),$("contacto")].forEach(el=> el.addEventListener(evt,()=>{validarSuma();renderBloques();updateWhatsAppLink();}));
-    });
-
-    function updateWhatsAppLink(){
-      const nombre = encodeURIComponent($("nombres").value || '');
-      const mesa = encodeURIComponent($("mesa").value || '');
-      const cant = encodeURIComponent(cantidadSel.value || '');
-      const msg = `Hola, quiero reservar mesa ${mesa} para ${cant} personas. Responsable: ${nombre}.`;
-      $("btn-whatsapp").href = 'https://wa.me/573127596112?text=' + encodeURIComponent(msg);
-    }
-
-    copiarBtns();
-
-    /* ====== CARGA DATOS ====== */
-    async function loadCoords(){
-      const res = await fetch('./assets/mesas-coords.json');
-      coords = await res.json();
-      renderOverlay();
-    }
-
-    async function loadMesas(){
-      const { data, error } = await _sb.from('mesas').select('id,nombre,aforo,reservados').order('id');
-      if(error){ console.error(error); return; }
-      mesas = data || [];
-      renderOverlay();
-      renderEstadoMesas();
-      // si ya hay seleccion, refrescar reglas de cantidad
-      if(mesaSel){
-        const m = mesas.find(x=>x.id===mesaSel.id);
-        if(m){ mesaSel=m; setCantidadOptionsForMesa(m); }
-      }
-    }
-
-    // refresco automático estado
-    setInterval(loadMesas, 15000);
-
-    /* ====== ENVIAR (RPC) ====== */
-    form.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      if(!mesaSel){ estado.textContent='Primero selecciona una mesa.'; estado.className='danger'; return; }
-
-      const cantidad = Number(cantidadSel.value||0);
-      const resto = mesaSel.aforo - mesaSel.reservados;
-      const primeraReserva = mesaSel.reservados===0;
-      const min = primeraReserva?8:1;
-      if(!(cantidad>=min && cantidad<=resto)){
-        estado.textContent = `Para esta mesa debes reservar entre ${min} y ${resto} puestos.`; estado.className='danger'; return;
-      }
-      if(!validarSuma()){ estado.textContent='La distribución de cupos debe sumar exactamente la cantidad seleccionada.'; estado.className='danger'; return; }
-      if(!$("acepto").checked){ estado.textContent='Debes aceptar la condición para continuar.'; estado.className='danger'; return; }
-
-      $("btn-enviar").disabled = true; estado.textContent='Procesando…'; estado.className='hint';
-      try{
-        // construir JSON de grupo
-        const respSi = $("resp-asiste").value==='si';
-        const socios=[], invitados=[];
-        if(respSi){
-          socios.push({ nombre: $("socio_nombre_res").value, cc: $("socio_cc_res").value, celular: $("socio_cel_res").value, accion: $("socio_accion_res").value, responsable:true });
-        }
-        for(let x=1;x<=Number(inptSoc.value||0);x++){
-          socios.push({ nombre: $("socio_nombre_"+x).value, cc: $("socio_cc_"+x).value, celular: $("socio_cel_"+x).value, accion: $("socio_accion_"+x).value });
-        }
-        for(let x=1;x<=Number(inptInv.value||0);x++){
-          invitados.push({ tipo: $("inv_tipo_"+x).value, documento: $("inv_doc_"+x).value, nombre: $("inv_nom_"+x).value, correo: $("inv_cor_"+x).value, celular: $("inv_cel_"+x).value });
-        }
-        const grupo = { socios, invitados, total: cantidad };
-
-        const { data, error } = await _sb.rpc('reserve_seats_v2', {
-          p_mesa_id: Number(mesaSel.id),
-          p_cantidad: cantidad,
-          p_responsable: $("nombres").value,
-          p_contacto: $("contacto").value,
-          p_correo: $("correo").value,
-          p_pago_url: null,
-          p_invitado: grupo,
-          p_evento: null
-        });
-
-        if(error){
-          if((error.message||'').includes('SIN_CUPO')){
-            estado.textContent='La mesa no tiene cupo suficiente.'; estado.className='danger'; $("btn-enviar").disabled=false; return;
-          }
-          throw error;
-        }
-
-        const totalPago = actualizarPago();
-        estado.innerHTML = `✅ ¡Reserva registrada para la <b>Mesa ${mesaSel.id}</b> por <b>${cantidad}</b> puesto(s). Total invitados: <b>${fmt(totalPago)}</b>.`;
-        estado.className = 'ok';
-        await loadMesas(); // refrescar estado
-        updateWhatsAppLink();
-      }catch(err){
-        console.error(err);
-        estado.textContent='Ocurrió un error al reservar. Intenta de nuevo.'; estado.className='danger';
-      }finally{
-        $("btn-enviar").disabled=false;
-      }
-    });
-
-    // ARRANQUE
-    (async()=>{
-      await loadCoords();
-      await loadMesas();
-    })();
-  </script>
+/* ===== Inicio ===== */
+(async()=>{
+  await loadCoords();
+  await reloadAll();
+  renderBloques();
+})();
+</script>
 </body>
 </html>
