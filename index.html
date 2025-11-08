@@ -20,7 +20,7 @@
     .grid{display:grid;gap:16px}
     @media (min-width:860px){.grid-2{grid-template-columns:1fr 1fr}}
     label{display:block;font-weight:600;margin-bottom:6px}
-    input,select,textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #2c2f36;background:#0f1013;color:#var(--text);outline:none}
+    input,select,textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #2c2f36;background:#0f1013;color:var(--text);outline:none}
     input:focus,select:focus,textarea:focus{border-color:#5c6cff;box-shadow:0 0 0 3px #5c6cff30}
     small.hint{color:var(--muted);display:block}
     .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid #2c2f36;background:#101217;color:#var(--text);padding:12px 16px;border-radius:12px;cursor:pointer;text-decoration:none;font-weight:600}
@@ -280,7 +280,6 @@ function renderOverlay(){
     const info = MESAS.find(x=>x.id===c.id) || {aforo:10,reservados:0,nombre:""};
     const libres = Math.max(0, (info.aforo||10) - (info.reservados||0));
 
-    // Estado visual por colores (igual que antes)
     let cls = "m-ok";
     if(libres===0) cls = "m-err";
     else if(libres<=2) cls = "m-warn";
@@ -297,14 +296,11 @@ function renderOverlay(){
 
     if(selectedMesa && selectedMesa.id===c.id) div.classList.add("selected");
 
-    /* 🔒 NUEVO: bloquear cualquier mesa parcialmente ocupada.
-       Solo se puede reservar cuando la mesa está totalmente libre (reservados == 0).
-       Las mesas llenas ya estaban bloqueadas. */
+    // bloquear parcial o llena
     if (info.reservados > 0 || libres === 0) {
       div.style.pointerEvents = "none";
       div.title = (libres===0) ? `Mesa ${c.id} – llena` : `Mesa ${c.id} – ya reservada (parcial)`;
     } else {
-      // Solo si está completamente libre permitimos seleccionar
       div.addEventListener("click", ()=> selectMesa(c.id, libres));
     }
 
@@ -355,7 +351,7 @@ function renderBloques(){
   lblSuma.textContent = `Seleccionados ${suma} de ${total} cupos`;
   lblSuma.style.color = (suma===total? '#a4a6ad' : '#ff5a5a');
 
-  /* ==== MODIFICADO: SOCIOS SOLO 2 CAMPOS ==== */
+  // ===== SOCIOS: solo Nombre completo y N.º de acción/cupo =====
   boxSoc.innerHTML = "";
   if(s>0){
     const title=document.createElement("h3"); title.textContent=`Datos de Socios (${s})`; title.style.margin='0 0 6px 0'; boxSoc.appendChild(title);
@@ -363,23 +359,18 @@ function renderBloques(){
       const wrap=document.createElement('div'); wrap.className='grid grid-2';
       const pre = (x===1 && respAsiste.value==="si") ? " – Responsable" : "";
       wrap.innerHTML = `
-        <div>
-          <label>Socio ${x}${pre} – Nombre completo</label>
-          <input id="socio_nombrec_${x}" required />
-        </div>
-        <div>
-          <label>Socio ${x}${pre} – N.º de acción/cupo</label>
-          <input id="socio_accion_${x}" required />
-        </div>
+        <div><label>Socio ${x}${pre} – Nombre completo</label><input id="socio_nombre_${x}" required /></div>
+        <div><label>Socio ${x}${pre} – N.º de acción/cupo</label><input id="socio_accion_${x}" required /></div>
       `;
       boxSoc.appendChild(wrap);
     }
+    // Autocompletar responsable (solo nombre completo)
     if(respAsiste.value==="si"){
-      $("socio_nombrec_1").value = $("nombres").value || "";
+      $("socio_nombre_1").value = $("nombres").value || "";
     }
   }
-  /* ==== FIN MOD SOCIOS ==== */
 
+  // INVITADOS (igual)
   boxInv.innerHTML = "";
   if(i>0){
     const title=document.createElement("h3"); title.textContent=`Datos de Invitados (${i})`; title.style.margin='0 0 6px 0'; boxInv.appendChild(title);
@@ -432,16 +423,12 @@ form.addEventListener('submit', async (e)=>{
   try{
     const cantidad = Number(cantidadSel.value||0);
     const socios=[], invitados=[];
-    /* ==== MODIFICADO: recoger solo nombre completo y acción ==== */
     for(let x=1;x<=Number(inptSoc.value||0);x++){
       socios.push({
-        nombre: $("socio_nombrec_"+x)?.value||"",
-        apellido: null,
-        celular: null,
+        nombre: $("socio_nombre_"+x)?.value||"",
         accion: $("socio_accion_"+x)?.value||""
       });
     }
-    /* ==== FIN MOD SOCIOS ==== */
     for(let x=1;x<=Number(inptInv.value||0);x++){
       invitados.push({
         tipo: $("inv_tipo_"+x)?.value||"",
@@ -475,10 +462,8 @@ form.addEventListener('submit', async (e)=>{
       throw error;
     }
 
-    // ✅ Mensaje de éxito sin ID y recarga limpia
     estado.textContent = 'RESERVADO CON ÉXITO';
     estado.className = 'ok';
-
     setTimeout(()=>{ window.location.reload(); }, 1200);
 
   }catch(err){
@@ -508,7 +493,6 @@ function bindQtyButtons(){
 
       let val = Number(el.value || 0) + delta;
 
-      // Si el responsable asiste, al menos 1 socio
       if(id === 'cupos_socios' && respAsiste.value === 'si'){
         if(val < 1) val = 1;
       }
