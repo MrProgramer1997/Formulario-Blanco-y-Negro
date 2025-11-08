@@ -20,10 +20,10 @@
     .grid{display:grid;gap:16px}
     @media (min-width:860px){.grid-2{grid-template-columns:1fr 1fr}}
     label{display:block;font-weight:600;margin-bottom:6px}
-    input,select,textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #2c2f36;background:#0f1013;color:var(--text);outline:none}
+    input,select,textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #2c2f36;background:#0f1013;color:#var(--text);outline:none}
     input:focus,select:focus,textarea:focus{border-color:#5c6cff;box-shadow:0 0 0 3px #5c6cff30}
     small.hint{color:var(--muted);display:block}
-    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid #2c2f36;background:#101217;color:var(--text);padding:12px 16px;border-radius:12px;cursor:pointer;text-decoration:none;font-weight:600}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid #2c2f36;background:#101217;color:#var(--text);padding:12px 16px;border-radius:12px;cursor:pointer;text-decoration:none;font-weight:600}
     .btn:hover{background:#151826}
     .btn.primary{background:#5c6cff;border-color:#5c6cff;color:#fff}
     .ok{color:var(--ok)} .danger{color:var(--err)} .muted{color:var(--muted)}
@@ -355,6 +355,7 @@ function renderBloques(){
   lblSuma.textContent = `Seleccionados ${suma} de ${total} cupos`;
   lblSuma.style.color = (suma===total? '#a4a6ad' : '#ff5a5a');
 
+  /* ==== MODIFICADO: SOCIOS SOLO 2 CAMPOS ==== */
   boxSoc.innerHTML = "";
   if(s>0){
     const title=document.createElement("h3"); title.textContent=`Datos de Socios (${s})`; title.style.margin='0 0 6px 0'; boxSoc.appendChild(title);
@@ -362,19 +363,22 @@ function renderBloques(){
       const wrap=document.createElement('div'); wrap.className='grid grid-2';
       const pre = (x===1 && respAsiste.value==="si") ? " – Responsable" : "";
       wrap.innerHTML = `
-        <div><label>Socio ${x}${pre} – Nombre</label><input id="socio_nombre_${x}" required /></div>
-        <div><label>Socio ${x}${pre} – Apellido</label><input id="socio_apellido_${x}" required /></div>
-        <div><label>Socio ${x}${pre} – Celular/WhatsApp</label><input id="socio_cel_${x}" inputmode="tel" required /></div>
-        <div><label>Socio ${x}${pre} – N.º de acción/cupo</label><input id="socio_accion_${x}" required /></div>
+        <div>
+          <label>Socio ${x}${pre} – Nombre completo</label>
+          <input id="socio_nombrec_${x}" required />
+        </div>
+        <div>
+          <label>Socio ${x}${pre} – N.º de acción/cupo</label>
+          <input id="socio_accion_${x}" required />
+        </div>
       `;
       boxSoc.appendChild(wrap);
     }
     if(respAsiste.value==="si"){
-      $("socio_nombre_1").value = ($("nombres").value||"").split(" ")[0]||"";
-      $("socio_apellido_1").value = ($("nombres").value||"").split(" ").slice(1).join(" ");
-      $("socio_cel_1").value = $("contacto").value||"";
+      $("socio_nombrec_1").value = $("nombres").value || "";
     }
   }
+  /* ==== FIN MOD SOCIOS ==== */
 
   boxInv.innerHTML = "";
   if(i>0){
@@ -428,14 +432,16 @@ form.addEventListener('submit', async (e)=>{
   try{
     const cantidad = Number(cantidadSel.value||0);
     const socios=[], invitados=[];
+    /* ==== MODIFICADO: recoger solo nombre completo y acción ==== */
     for(let x=1;x<=Number(inptSoc.value||0);x++){
       socios.push({
-        nombre: $("socio_nombre_"+x)?.value||"",
-        apellido: $("socio_apellido_"+x)?.value||"",
-        celular: $("socio_cel_"+x)?.value||"",
+        nombre: $("socio_nombrec_"+x)?.value||"",
+        apellido: null,
+        celular: null,
         accion: $("socio_accion_"+x)?.value||""
       });
     }
+    /* ==== FIN MOD SOCIOS ==== */
     for(let x=1;x<=Number(inptInv.value||0);x++){
       invitados.push({
         tipo: $("inv_tipo_"+x)?.value||"",
