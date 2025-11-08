@@ -1,0 +1,45 @@
+[
+  { "id": 1,  "left": 61.8, "top": 19.0, "width": 4.6, "height": 5.6 },
+  { "id": 2,  "left": 68.8, "top": 19.0, "width": 4.6, "height": 5.6 },
+  { "id": 3,  "left": 75.8, "top": 19.0, "width": 4.6, "height": 5.6 },
+  { "id": 4,  "left": 82.8, "top": 19.0, "width": 4.6, "height": 5.6 },
+  { "id": 5,  "left": 89.8, "top": 19.0, "width": 4.6, "height": 5.6 },
+
+  { "id": 6,  "left": 61.8, "top": 27.5, "width": 4.6, "height": 5.6 },
+  { "id": 7,  "left": 68.8, "top": 27.5, "width": 4.6, "height": 5.6 },
+  { "id": 8,  "left": 75.8, "top": 27.5, "width": 4.6, "height": 5.6 },
+  { "id": 9,  "left": 82.8, "top": 27.5, "width": 4.6, "height": 5.6 },
+  { "id": 10, "left": 89.8, "top": 27.5, "width": 4.6, "height": 5.6 },
+
+  { "id": 11, "left": 61.8, "top": 36.2, "width": 4.6, "height": 5.6 },
+  { "id": 12, "left": 68.8, "top": 36.2, "width": 4.6, "height": 5.6 },
+  { "id": 13, "left": 75.8, "top": 36.2, "width": 4.6, "height": 5.6 },
+  { "id": 14, "left": 82.8, "top": 36.2, "width": 4.6, "height": 5.6 },
+  { "id": 15, "left": 89.8, "top": 36.2, "width": 4.6, "height": 5.6 },
+
+  { "id": 16, "left": 61.8, "top": 44.8, "width": 4.6, "height": 5.6 },
+  { "id": 17, "left": 68.8, "top": 44.8, "width": 4.6, "height": 5.6 },
+  { "id": 18, "left": 75.8, "top": 44.8, "width": 4.6, "height": 5.6 },
+  { "id": 19, "left": 82.8, "top": 44.8, "width": 4.6, "height": 5.6 },
+  { "id": 20, "left": 89.8, "top": 44.8, "width": 4.6, "height": 5.6 },
+
+  { "id": 21, "left": 61.8, "top": 53.4, "width": 4.6, "height": 5.6 },
+  { "id": 22, "left": 68.8, "top": 53.4, "width": 4.6, "height": 5.6 },
+  { "id": 23, "left": 75.8, "top": 53.4, "width": 4.6, "height": 5.6 },
+  { "id": 24, "left": 82.8, "top": 53.4, "width": 4.6, "height": 5.6 },
+  { "id": 25, "left": 89.8, "top": 53.4, "width": 4.6, "height": 5.6 },
+
+  { "id": 26, "left": 61.8, "top": 62.0, "width": 4.6, "height": 5.6 },
+  { "id": 27, "left": 68.8, "top": 62.0, "width": 4.6, "height": 5.6 },
+  { "id": 28, "left": 75.8, "top": 62.0, "width": 4.6, "height": 5.6 },
+  { "id": 29, "left": 82.8, "top": 62.0, "width": 4.6, "height": 5.6 },
+  { "id": 30, "left": 89.8, "top": 62.0, "width": 4.6, "height": 5.6 },
+
+  { "id": 31, "left": 12.5, "top": 45.2, "width": 5.4, "height": 6.0 },
+  { "id": 32, "left": 19.8, "top": 45.2, "width": 5.4, "height": 6.0 },
+  { "id": 33, "left": 27.1, "top": 45.2, "width": 5.4, "height": 6.0 },
+
+  { "id": 34, "left": 12.5, "top": 54.6, "width": 5.4, "height": 6.0 },
+  { "id": 35, "left": 19.8, "top": 54.6, "width": 5.4, "height": 6.0 },
+  { "id": 36, "left": 27.1, "top": 54.6, "width": 5.4, "height": 6.0 }
+]

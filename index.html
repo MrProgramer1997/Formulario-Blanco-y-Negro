@@ -6,7 +6,7 @@
   <title>Reserva – Fiesta Blanco & Negro</title>
   <meta name="description" content="Formulario de reservas – GitHub Pages + Supabase" />
   <style>
-    :root{--bg:#0b0b0d;--card:#141418;--muted:#a4a6ad;--text:#f1f1f3;--accent:#ffffff;--ok:#1aa34a;--warn:#f6c445;--err:#ff5a5a}
+    :root{--bg:#0b0b0d;--card:#141418;--muted:#a4a6ad;--text:#f1f1f3;--ok:#1aa34a;--warn:#f6c445;--err:#ff5a5a}
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Ubuntu,Arial,sans-serif;line-height:1.45}
     .wrap{max-width:980px;margin:auto;padding:20px}
@@ -17,10 +17,9 @@
     .grid{display:grid;gap:16px}
     @media (min-width:860px){.grid-2{grid-template-columns:1fr 1fr}}
     label{display:block;font-weight:600;margin-bottom:6px}
-    input,select,textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #2c2f36;background:#0f1013;color:var(--text);outline:none}
-    input:focus,select:focus,textarea:focus{border-color:#5c6cff;box-shadow:0 0 0 3px #5c6cff30}
-    small{color:var(--muted)}
-    .hint{font-size:12px;color:var(--muted)}
+    input,select{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #2c2f36;background:#0f1013;color:var(--text);outline:none}
+    input:focus,select:focus{border-color:#5c6cff;box-shadow:0 0 0 3px #5c6cff30}
+    small.hint{color:var(--muted);font-size:12px}
     .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid #2c2f36;background:#101217;color:var(--text);padding:12px 16px;border-radius:12px;cursor:pointer;text-decoration:none;font-weight:600}
     .btn:hover{background:#151826}
@@ -35,11 +34,16 @@
     .bank{display:grid;gap:10px}
     .bank .item{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:12px;border-radius:12px;background:#0f1013;border:1px solid #2c2f36}
     .alert{border-left:4px solid var(--warn);background:#17130a;border-radius:12px;padding:12px 14px}
-    .terms{display:flex;gap:8px;align-items:flex-start}
-    .pill{display:inline-block;padding:6px 10px;border:1px solid #2c2f36;border-radius:999px;background:#0f1013;color:var(--muted);font-size:12px}
-    footer{color:var(--muted);text-align:center;padding:30px 10px}
+    .terms{display:flex;gap:8px;align-items:center}  /* checkbox pegado al texto */
+    .pill{display:inline-block;padding:6px 10px;border:1px solid #2c2f36;border-radius:999px;background:#0f1013;color:#a4a6ad;font-size:12px}
+    .list{margin:0;padding-left:18px}
+    .muted{color:#a4a6ad}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px}
+    .b-ok{background:#0d2;color:#000}
+    .b-warn{background:#fb0;color:#000}
+    .b-err{background:#f55;color:#fff}
+    .b-block{background:#888;color:#000}
   </style>
-  <!-- Supabase SDK v2 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -67,6 +71,13 @@
       </div>
     </section>
 
+    <!-- LISTA COMPLETA DE MESAS (ocupadas, disponibles, bloqueada) -->
+    <section class="card">
+      <h3 style="margin:0">Estado de mesas</h3>
+      <p class="hint">Ves cuáles están disponibles, cuántos cupos quedan y cuáles están ocupadas. <span class="danger">La mesa 2 está bloqueada.</span></p>
+      <ul id="lista-mesas" class="list"></ul>
+    </section>
+
     <!-- ALERTA PENALIDAD -->
     <section class="card alert">
       <strong>Importante:</strong> En el caso de reservar y no asistir, el club facturará dentro de la cuota de sostenimiento, un valor de <strong>$200.000</strong> por persona.
@@ -90,8 +101,15 @@
             <input id="correo" type="email" name="correo" placeholder="correo@ejemplo.com" required />
           </div>
           <div>
-            <label for="mesa">Número de mesa</label>
-            <input id="mesa" name="mesa" required placeholder="Ej. 12 (ver mapa)" />
+            <label for="accion_responsable">N.º de acción del socio responsable</label>
+            <input id="accion_responsable" name="accion_responsable" placeholder="Acción o cupo" />
+          </div>
+          <div>
+            <label for="mesa">Mesa</label>
+            <select id="mesa" name="mesa" required>
+              <option value="" selected disabled>Cargando mesas…</option>
+            </select>
+            <small class="hint">Solo se muestran mesas con cupos. La mesa 2 no aparece por estar bloqueada.</small>
           </div>
           <div>
             <label for="cantidad">Cantidad de puestos a reservar</label>
@@ -105,12 +123,21 @@
           </div>
         </div>
 
+        <!-- RESPONSABLE ASISTE -->
+        <div class="row" style="margin-top:2px">
+          <label class="terms">
+            <input type="checkbox" id="responsable_asiste" checked />
+            <span>¿El responsable también asiste al evento? <strong>Sí</strong> (se descuenta 1 cupo y se registra como <strong>socio</strong>)</span>
+          </label>
+          <small class="hint" id="nota-resp">* De los cupos seleccionados, se descuenta el del responsable.</small>
+        </div>
+
         <!-- DISTRIBUCIÓN DE CUPOS -->
         <div class="card" style="background:#0f1013;border:1px dashed #2c2f36">
           <label style="font-weight:700">Distribuye los cupos</label>
-          <div class="grid grid-2">
+          <div class="grid grid-2" style="margin-top:8px">
             <div>
-              <label for="cupos_socios">Cupos para <strong>Socios</strong></label>
+              <label for="cupos_socios">Cupos para <strong>Socios</strong> (además del responsable)</label>
               <input id="cupos_socios" type="number" min="0" value="0" />
             </div>
             <div>
@@ -118,7 +145,7 @@
               <input id="cupos_invitados" type="number" min="0" value="0" />
             </div>
             <div>
-              <small class="hint" id="suma-cupos">Debe sumar exactamente a la cantidad seleccionada.</small>
+              <small class="hint" id="suma-cupos">Seleccionados 0 + 1 (responsable) = 1 de 8 cupos</small>
             </div>
           </div>
         </div>
@@ -131,7 +158,7 @@
 
         <hr style="border:0;border-top:1px solid #2c2f36;margin:18px 0"/>
 
-        <!-- COSTO Y PAGO -->
+        <!-- COSTO Y BANCOS -->
         <div class="grid grid-2">
           <div>
             <label>Total a pagar por Invitados</label>
@@ -141,9 +168,8 @@
             </div>
           </div>
           <div>
-            <label for="soporte">Soporte de pago (PDF/JPG/PNG) <span class="danger">*</span></label>
-            <input id="soporte" name="soporte" type="file" accept=".pdf,.jpg,.jpeg,.png" required />
-            <small class="hint">Transferir a Davivienda CC 126669999149 o Bancolombia CC 07322164601 y adjuntar el soporte.</small>
+            <label>Transferencia bancaria</label>
+            <small class="hint">Realiza la transferencia y comparte el soporte por WhatsApp o en la oficina de eventos.</small>
             <div class="bank" style="margin-top:8px">
               <div class="item"><span>Davivienda • CC <strong>126669999149</strong></span><button class="btn" type="button" data-copy="126669999149">Copiar</button></div>
               <div class="item"><span>Bancolombia • CC <strong>07322164601</strong></span><button class="btn" type="button" data-copy="07322164601">Copiar</button></div>
@@ -152,12 +178,20 @@
           </div>
         </div>
 
-        <p class="terms" style="margin-top:16px">
-          <input id="acepto" type="checkbox" required />
-          <label for="acepto">Confirmo que reservo mínimo 8 puestos y acepto que, en caso de no asistir, se cobrará $200.000 por persona en mi cuota de sostenimiento.</label>
-        </p>
+        <div class="row" style="margin-top:8px">
+          <label class="terms">
+            <input id="acepto" type="checkbox" required />
+            <span>Confirmo que reservo mínimo 8 puestos y acepto que, en caso de no asistir, se cobrará $200.000 por persona en mi cuota de sostenimiento.</span>
+          </label>
+        </div>
 
         <div class="row" style="margin-top:12px">
+          <label class="hint" style="display:flex;gap:8px;align-items:center">
+            <input type="checkbox" id="demo" /> Modo prueba (no descuenta cupos ni guarda en la base de datos)
+          </label>
+        </div>
+
+        <div class="row" style="margin-top:10px">
           <button class="btn primary" type="submit" id="btn-enviar">Reservar mesa</button>
           <a class="btn ghost" target="_blank" rel="noopener" id="btn-whatsapp" href="https://wa.me/573127596112">Hablar por WhatsApp</a>
         </div>
@@ -176,7 +210,7 @@
         <li>Valor por persona: corporado $0; invitado $250.000.</li>
         <li>Acomodación: mesas rectangulares de 8 (máx. 10) en Salón Rialto y Lobby. Para grupos de 2–7, escribir a WhatsApp 3127596112.</li>
         <li>Reservas/cancelaciones hasta jueves 20 de noviembre o hasta agotar disponibilidad.</li>
-        <li>Pasos: (1) revise y elija mesa; (2) complete este formulario; (3) pague invitados y registre en oficina de eventos con el soporte.</li>
+        <li>Pasos: (1) revise y elija mesa; (2) complete este formulario; (3) pague invitados y registre en oficina de eventos.</li>
         <li>En caso de no cumplir con el mínimo de puestos, el club podrá reubicar su grupo.</li>
         <li>La ubicación de mesas puede cambiar según necesidades de montaje.</li>
       </ul>
@@ -187,15 +221,23 @@
 
   <script>
     // ====== CONFIGURACIÓN SUPABASE ======
-    const SUPABASE_URL = "https://TU-PROYECTO.supabase.co"; // <-- reemplazar
-    const SUPABASE_ANON_KEY = "TU-ANON-KEY"; // <-- reemplazar
+    const SUPABASE_URL = "https://cmrydhzpcuklfvigboka.supabase.co"; // <-- reemplaza
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtcnlkaHpwY3VrbGZ2aWdib2thIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzU1NDIsImV4cCI6MjA3ODExMTU0Mn0.SzLh-CoahU63AISJwPKJLJkAf-JQ2qxAwUt69NsPKgQ";                // <-- reemplaza
     const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // ====== UTILIDADES DE UI ======
+    // ====== UTILIDADES ======
     const $ = (id)=>document.getElementById(id);
     const estado = $("estado");
-    const cantidadSel = $("cantidad");
     const form = $("form-reserva");
+    const listaMesas = $("lista-mesas");
+    const selectMesa = $("mesa");
+    const cantidadSel = $("cantidad");
+    const inptSoc = $("cupos_socios"), inptInv = $("cupos_invitados");
+    const responsableAsiste = $("responsable_asiste");
+    const accionResp = $("accion_responsable");
+
+    const boxSoc = $("datos-socios"), boxInv = $("datos-invitados");
+    const lblSuma = $("suma-cupos");
 
     const copiarBtns = ()=>document.querySelectorAll('[data-copy]').forEach(btn=>{
       btn.addEventListener('click', async ()=>{
@@ -203,33 +245,75 @@
       });
     });
 
-    // ====== RENDERIZADO DINÁMICO ======
-    const inptSoc = $("cupos_socios"), inptInv = $("cupos_invitados");
-    const boxSoc = $("datos-socios"), boxInv = $("datos-invitados");
-    const lblSuma = $("suma-cupos");
+    // ====== MESAS: cargar todas con estado (excluye mesa 2 en selector) ======
+    let cacheMesas = [];
+    async function cargarMesas(){
+      selectMesa.innerHTML = '<option value="" selected disabled>Cargando mesas…</option>';
+      listaMesas.innerHTML = '';
+      const { data, error } = await _sb.from('mesas').select('id,nombre,aforo,reservados').order('id',{ascending:true});
+      if(error){ console.error(error); selectMesa.innerHTML = '<option value="" disabled>Error cargando mesas</option>'; return; }
+      cacheMesas = data;
+
+      // Construye lista completa con badges
+      for(const m of data){
+        const cupos = Math.max(0,(m.aforo||0)-(m.reservados||0));
+        const nom = m.nombre ? ` – ${m.nombre}` : '';
+        let badge = `<span class="badge b-ok">${cupos} disp.</span>`;
+        if(m.id===2){ badge = `<span class="badge b-block">Bloqueada</span>`; }
+        else if(cupos===0){ badge = `<span class="badge b-err">LLENA</span>`; }
+        else if(cupos<=3){ badge = `<span class="badge b-warn">${cupos} disp.</span>`; }
+        const li = document.createElement('li');
+        li.innerHTML = `Mesa <strong>${m.id}</strong>${nom}: ${badge}`;
+        listaMesas.appendChild(li);
+      }
+
+      // Selector: solo mesas con cupos > 0 y que no sean la 2
+      const disponibles = data
+        .filter(m => m.id !== 2)
+        .map(m => ({ ...m, cupos: Math.max(0,(m.aforo||0)-(m.reservados||0)) }))
+        .filter(m => m.cupos > 0);
+
+      if(disponibles.length === 0){
+        selectMesa.innerHTML = '<option value="" disabled>Sin mesas disponibles</option>';
+      }else{
+        selectMesa.innerHTML = '<option value="" selected disabled>Selecciona una mesa</option>';
+        for(const m of disponibles){
+          const opt = document.createElement('option');
+          opt.value = m.id;
+          const nom = m.nombre ? ` – ${m.nombre}` : '';
+          opt.textContent = `Mesa ${m.id}${nom} — ${m.cupos} cupos disponibles`;
+          selectMesa.appendChild(opt);
+        }
+      }
+    }
+
+    // ====== Lógica de cupos (incluye responsable) ======
+    function extraResponsable(){ return responsableAsiste.checked ? 1 : 0; }
 
     function validarSuma(){
       const total = Number(cantidadSel.value||0);
-      const s = Number(inptSoc.value||0), i = Number(inptInv.value||0);
-      const suma = s+i;
-      lblSuma.textContent = `Seleccionados ${suma} de ${total} cupos`;
+      const s = Number(inptSoc.value||0), i = Number(inptInv.value||0), extra = extraResponsable();
+      const suma = s+i+extra;
+      lblSuma.textContent = `Seleccionados ${s+i} + ${extra} (responsable) = ${suma} de ${total} cupos`;
       lblSuma.style.color = (suma===total? '#a4a6ad' : '#ff5a5a');
+      accionResp.required = responsableAsiste.checked;
       return suma===total && total>=8 && total<=10;
     }
 
     function renderBloques(){
-      // Socios
+      // Socios (sin responsable; se agrega auto en el envío)
       boxSoc.innerHTML = '';
       const ns = Number(inptSoc.value||0);
       if(ns>0){
         const title = document.createElement('h3'); title.textContent = `Datos de Socios (${ns})`; title.style.margin='0'; boxSoc.appendChild(title);
+        const badge = document.createElement('small'); badge.className='hint'; badge.textContent = responsableAsiste.checked ? 'El socio responsable se registrará automáticamente con los datos de la parte superior.' : 'El responsable no se contará en esta reserva.'; boxSoc.appendChild(badge);
         for(let x=1;x<=ns;x++){
           const wrap=document.createElement('div'); wrap.className='grid grid-2';
           wrap.innerHTML = `
             <div><label for="socio_nombre_${x}">Socio ${x} – Nombre</label><input id="socio_nombre_${x}" required /></div>
             <div><label for="socio_apellido_${x}">Socio ${x} – Apellido</label><input id="socio_apellido_${x}" required /></div>
             <div><label for="socio_cel_${x}">Socio ${x} – Celular/WhatsApp</label><input id="socio_cel_${x}" inputmode="tel" required /></div>
-            <div><label for="socio_accion_${x}">Socio ${x} – N° de acción/cupo</label><input id="socio_accion_${x}" required /></div>`;
+            <div><label for="socio_accion_${x}">Socio ${x} – N.º de acción/cupo</label><input id="socio_accion_${x}" required /></div>`;
           boxSoc.appendChild(wrap);
         }
       }
@@ -265,31 +349,22 @@
       return total;
     }
 
+    // Listeners
     ['change','input'].forEach(evt=>{
-      [cantidadSel,inptSoc,inptInv].forEach(el=> el.addEventListener(evt,()=>{validarSuma();renderBloques();updateWhatsAppLink();}));
+      [cantidadSel,inptSoc,inptInv,selectMesa,responsableAsiste,$("nombres"),$("mesa")].forEach(el=> el.addEventListener(evt,()=>{validarSuma();renderBloques();updateWhatsAppLink();}));
     });
 
     function updateWhatsAppLink(){
       const nombre = encodeURIComponent($("nombres").value || '');
-      const mesa = encodeURIComponent($("mesa").value || '');
+      const mesaTxt = selectMesa.options[selectMesa.selectedIndex]?.text || '';
       const cant = encodeURIComponent(cantidadSel.value || '');
-      const msg = `Hola, quiero reservar mesa ${mesa} para ${cant} personas. Responsable: ${nombre}.`;
+      const msg = `Hola, quiero reservar ${mesaTxt} para ${cant} personas. Responsable: ${decodeURIComponent(nombre)}.`;
       $("btn-whatsapp").href = 'https://wa.me/573127596112?text=' + encodeURIComponent(msg);
     }
 
     copiarBtns();
 
-    // ====== SUBIR ARCHIVO A STORAGE ======
-    async function subirSoporte(file){
-      if(!file) throw new Error('Debes adjuntar el soporte de pago.');
-      const nombre = `pagos/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9_.-]/g,'_')}`;
-      const { error } = await _sb.storage.from('pagos').upload(nombre, file, { cacheControl: '3600', upsert: false });
-      if(error){ throw new Error('No se pudo subir el soporte'); }
-      const { data: pub } = _sb.storage.from('pagos').getPublicUrl(nombre);
-      return pub.publicUrl;
-    }
-
-    // ====== ENVIAR RESERVA (RPC) ======
+    // ====== SUBMIT ======
     form.addEventListener('submit', async (e)=>{
       e.preventDefault();
       const cantidad = Number(cantidadSel.value||0);
@@ -299,47 +374,67 @@
         return;
       }
       if(!validarSuma()){
-        estado.textContent='La distribución de cupos debe sumar exactamente la cantidad seleccionada.'; 
+        estado.textContent='La distribución de cupos debe sumar exactamente la cantidad seleccionada (incluido el responsable).'; 
         estado.className='danger'; 
         return;
       }
-      const soporteFile = document.getElementById('soporte').files[0];
-      if(!soporteFile){ 
-        estado.textContent='Debes adjuntar el soporte de pago para continuar.'; 
+      if(!selectMesa.value){
+        estado.textContent='Selecciona una mesa disponible.'; 
         estado.className='danger'; 
-        return; 
+        return;
       }
 
       $("btn-enviar").disabled = true; estado.textContent='Procesando…'; estado.className='hint';
       try{
-        const pago_url = await subirSoporte(soporteFile);
-
         const socios=[], invitados=[];
+        // Socios manuales
         for(let x=1;x<=Number(inptSoc.value||0);x++){
-          socios.push({ nombre: $("socio_nombre_"+x).value, apellido: $("socio_apellido_"+x).value, celular: $("socio_cel_"+x).value, accion: $("socio_accion_"+x).value });
+          socios.push({ nombre: $("socio_nombre_"+x)?.value, apellido: $("socio_apellido_"+x)?.value, celular: $("socio_cel_"+x)?.value, accion: $("socio_accion_"+x)?.value });
         }
+        // Responsable como socio si asiste
+        if(responsableAsiste.checked){
+          const full = $("nombres").value.trim();
+          let nombre = full, apellido = '';
+          if(full.includes(' ')){ const parts = full.split(' '); apellido = parts.pop(); nombre = parts.join(' '); }
+          socios.unshift({ nombre, apellido: apellido || null, celular: $("contacto").value, accion: accionResp.value || null, responsable: true });
+        }
+        // Invitados
         for(let x=1;x<=Number(inptInv.value||0);x++){
           invitados.push({ tipo: $("inv_tipo_"+x).value, documento: $("inv_doc_"+x).value, pnombre: $("inv_pnom_"+x).value, snombre: $("inv_snom_"+x).value||null, papellido: $("inv_pape_"+x).value, sapellido: $("inv_sape_"+x).value||null, correo: $("inv_cor_"+x).value, celular: $("inv_cel_"+x).value });
         }
 
-        const grupo = { socios, invitados, total: cantidad };
+        const grupo = { socios, invitados, total: cantidad, responsable_incluido: responsableAsiste.checked };
+        const mesaId = Number(selectMesa.value);
+        const mesaNombre = (cacheMesas.find(m=>m.id===mesaId)?.nombre) || null;
+        const eventoMeta = { mesa: { id: mesaId, nombre: mesaNombre } };
 
+        // Modo prueba
+        if($("demo").checked){
+          const totalPago = actualizarPago();
+          const fmt = (n)=> n.toLocaleString('es-CO', { style:'currency', currency:'COP', maximumFractionDigits:0 });
+          estado.innerHTML = `✅ <strong>Simulación</strong> sin afectar cupos.<br> Mesa: <strong>${mesaId}${mesaNombre? ' – '+mesaNombre : ''}</strong>. Total a pagar por invitados: <strong>${fmt(totalPago)}</strong>.`;
+          estado.className = 'ok';
+          return;
+        }
+
+        // Real
         const { data, error } = await _sb.rpc('reserve_seats_v2', {
-          p_mesa_id: Number($("mesa").value),
+          p_mesa_id: mesaId,
           p_cantidad: cantidad,
           p_responsable: $("nombres").value,
           p_contacto: $("contacto").value,
           p_correo: $("correo").value,
-          p_pago_url: pago_url,
+          p_pago_url: null,
           p_invitado: grupo,
-          p_evento: null
+          p_evento: eventoMeta
         });
 
         if(error){
           if((error.message||'').includes('SIN_CUPO')){
-            estado.textContent='La mesa no tiene cupo suficiente.'; 
+            estado.textContent='La mesa no tiene cupo suficiente o se ocupó durante el proceso.'; 
             estado.className='danger'; 
             $("btn-enviar").disabled=false; 
+            await cargarMesas();
             return;
           }
           throw error;
@@ -347,16 +442,22 @@
 
         const totalPago = actualizarPago();
         const fmt = (n)=> n.toLocaleString('es-CO', { style:'currency', currency:'COP', maximumFractionDigits:0 });
-        estado.innerHTML = `¡Reserva registrada! ID: <strong>${data}</strong>. Total a pagar por invitados: <strong>${fmt(totalPago)}</strong>.`;
+        estado.innerHTML = `¡Reserva registrada! ID: <strong>${data}</strong>. Mesa: <strong>${mesaId}${mesaNombre? ' – '+mesaNombre : ''}</strong>. Total a pagar por invitados: <strong>${fmt(totalPago)}</strong>.`;
         estado.className = 'ok';
         updateWhatsAppLink();
+        await cargarMesas();
       }catch(err){
         console.error(err);
         estado.textContent='Ocurrió un error al reservar. Intenta de nuevo.';
         estado.className='danger';
+      } finally {
         $("btn-enviar").disabled=false;
       }
     });
+
+    // Init
+    cargarMesas();
+    validarSuma(); renderBloques(); copiarBtns();
   </script>
 </body>
 </html>
