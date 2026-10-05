@@ -1,0 +1,27 @@
+# Public repository allowlist. New files require explicit review.
+# Not a replacement for deleting already-tracked files or cleaning history.
+*
+!*/
+!/.gitignore
+!/_config.yml
+!/index.html
+!/revision-2026/admin.html
+!/revision-2026/assets/app.css
+!/revision-2026/assets/icon.svg
+!/revision-2026/assets/payment-lab.css
+!/revision-2026/assets/plano-2026.webp
+!/revision-2026/assets/protocolo-original-2026.docx
+!/revision-2026/index.html
+!/revision-2026/js/admin.js
+!/revision-2026/js/api.js
+!/revision-2026/js/app.js
+!/revision-2026/js/appearance.js
+!/revision-2026/js/config.js
+!/revision-2026/js/domain.js
+!/revision-2026/js/icons.js
+!/revision-2026/js/lab-maintenance.js
+!/revision-2026/js/payment-lab-model.js
+!/revision-2026/js/payment-lab.js
+!/revision-2026/js/result.js
+!/revision-2026/pruebas-pago.html
+!/revision-2026/resultado.html

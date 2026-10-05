@@ -1,0 +1,42 @@
+# GitHub Pages: keep only website content in the generated site.
+# Does not hide files from the GitHub source repository or its history.
+exclude:
+  - supabase
+  - tests
+  - tools
+  - node_modules
+  - vendor
+  - docs
+  - _site
+  - MANTENIMIENTO_LOCAL
+  - SOLO_LOCAL
+  - MATERIAL_RETIRADO
+  - .git
+  - .github
+  - .vscode
+  - .env
+  - .env.local
+  - .env.production
+  - .env.test
+  - README.md
+  - LEEME.md
+  - package.json
+  - package-lock.json
+  - manifest.json
+  - VISTA-PREVIA.html
+  - ADMIN-DEMO.html
+  - CAMBIOS_V2.md
+  - CAMBIOS_LABORATORIO_WEB.md
+  - CAMBIOS_CONFIRMACION_VERIFICADA.md
+  - CAMBIOS_CONFIRMACION_AUTOMATICA.md
+  - VALIDACION.md
+  - VALIDACION_V1.md
+  - "*.cmd"
+  - "*.ps1"
+  - "*.sql"
+  - "*.log"
+  - "*.zip"
+  - "RESULTADO*.json"
+  - "DIAGNOSTICO*.json"
+  - assets/mesas-coords.json
+  - assets/plano-blanco-negro.jpg
