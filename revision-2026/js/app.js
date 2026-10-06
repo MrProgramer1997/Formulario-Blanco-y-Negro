@@ -35,7 +35,7 @@ function queueMemberSearch(index,value){
  clearTimeout(memberSearchTimers.get(index));
  memberSearchTimers.set(index,setTimeout(()=>searchMember(index,value),300));
 }
-const statusName=s=>({available:'Disponible',held:'En pago',confirmed:'Reservada',occupied:'Reservada',blocked:'Bloqueada'}[s]||'No disponible');
+const statusName=s=>({available:'Disponible',held:'En pago',confirmed:'Reservada',occupied:'Reservada',blocked:'Reservada'}[s]||'No disponible');
 function mapHTML(){return `<div class="map"><img src="assets/plano-2026.webp" width="1448" height="1086" alt="Plano Rialto y Lobby. Mesas 1 a 33 en Rialto y 34 a 45 en Lobby.">${tables.map(t=>`<button type="button" class="map-marker ${t.status} ${t.number===d.table?'selected':''}" style="left:${t.x}%;top:${t.y}%" data-table="${t.number}" aria-label="Mesa ${t.number}, ${t.zone}, ${statusName(t.status)}" aria-pressed="${t.number===d.table}" ${t.status!=='available'||!ready?'disabled':''}>${t.number}</button>`).join('')}</div>`;}
 function renderTables(){
  $('table-grid').innerHTML=tables.filter(t=>zone==='all'||t.zone===zone).map(t=>`<button type="button" class="table-cell ${t.status==='confirmed'?'occupied':t.status} ${t.number===d.table?'selected':''}" data-table="${t.number}" aria-label="Mesa ${t.number}, ${t.zone}, ${statusName(t.status)}" aria-pressed="${t.number===d.table}" ${t.status!=='available'||!ready?'disabled':''}>${String(t.number).padStart(2,'0')}${t.status!=='available'?`<small>${statusName(t.status)}</small>`:''}</button>`).join('');
