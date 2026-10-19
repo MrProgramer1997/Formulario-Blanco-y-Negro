@@ -24,8 +24,8 @@ const html=value=>String(value??'').replace(/[&<>"']/g,char=>({
 function labelExportButton(){
  const button=document.getElementById(EXPORT_BUTTON_ID);
  if(!button)return;
- button.textContent=EXPORT_LABEL;
- button.setAttribute('aria-label',EXPORT_LABEL);
+ if(!button.disabled&&button.textContent!==EXPORT_LABEL)button.textContent=EXPORT_LABEL;
+ if(button.getAttribute('aria-label')!==EXPORT_LABEL)button.setAttribute('aria-label',EXPORT_LABEL);
 }
 
 function showError(message){
@@ -75,14 +75,14 @@ function normalizeAttendee(reservation,person){
 }
 
 function validateReservationAttendees(reservation,attendees){
- if(!Array.isArray(attendees))throw new Error(`La mesa ${reservation.table_number} no devolvio una lista valida de asistentes.`);
+ if(!Array.isArray(attendees))throw new Error(`La mesa ${reservation.table_number} no devolvió una lista válida de asistentes.`);
  const members=attendees.filter(person=>person.kind==='member').length;
  const guests=attendees.filter(person=>person.kind==='guest').length;
  const expectedTotal=Number(reservation.quantity||0);
  const expectedMembers=Number(reservation.member_count||0);
  const expectedGuests=Number(reservation.guest_count||0);
  if(attendees.length!==expectedTotal||members!==expectedMembers||guests!==expectedGuests){
-  throw new Error(`La mesa ${reservation.table_number} tiene una diferencia entre el resumen y sus asistentes. No se genero un archivo incompleto.`);
+  throw new Error(`La mesa ${reservation.table_number} tiene una diferencia entre el resumen y sus asistentes. No se generó un archivo incompleto.`);
  }
 }
 
